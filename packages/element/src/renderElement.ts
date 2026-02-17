@@ -88,24 +88,26 @@ const appendAgentDebugLog = (
   message: string,
   data: Record<string, unknown>,
 ) => {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-implied-eval
-    const nodeRequire = (0, eval)("require") as (
-      id: string,
-    ) => { appendFileSync: (path: string, content: string) => void };
-    nodeRequire("fs").appendFileSync(
-      "/opt/cursor/logs/debug.log",
-      `${JSON.stringify({
-        hypothesisId,
-        location,
-        message,
-        data,
-        timestamp: Date.now(),
-      })}\n`,
-    );
-  } catch {
-    // no-op for browser runtime
+  if (import.meta.env.MODE !== "test") {
+    return;
   }
+  const fsModulePath = "node:fs";
+  void import(/* @vite-ignore */ fsModulePath)
+    .then((fs) => {
+      fs.appendFileSync(
+        "/opt/cursor/logs/debug.log",
+        `${JSON.stringify({
+          hypothesisId,
+          location,
+          message,
+          data,
+          timestamp: Date.now(),
+        })}\n`,
+      );
+    })
+    .catch(() => {
+      // no-op for browser runtime
+    });
 };
 
 const isPendingImageElement = (
