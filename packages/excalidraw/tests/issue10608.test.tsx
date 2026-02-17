@@ -26,8 +26,8 @@ describe("Issue #10608 - circle outline arrow seam", () => {
       zoom: {
         value: 1 as NormalizedZoomValue,
       },
-      scrollX: 0,
-      scrollY: 0,
+      scrollX: -1300,
+      scrollY: -150,
     });
   });
 
