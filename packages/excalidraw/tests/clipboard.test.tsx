@@ -559,3 +559,72 @@ describe("clipboard - pasting mermaid definition", () => {
     });
   });
 });
+
+describe("clipboard - pasting csv as table", () => {
+  it("should paste csv data as table elements", async () => {
+    const csv = "Name,Role\nAlice,Engineer\nBob,Designer";
+
+    pasteWithCtrlCmdV(csv);
+
+    await waitFor(() => {
+      const rectangles = h.elements.filter(
+        (element) => element.type === "rectangle",
+      );
+      const textContents = h.elements
+        .map((element) => (element.type === "text" ? element.text : null))
+        .filter((text): text is string => !!text);
+
+      expect(rectangles).toHaveLength(6);
+      expect(textContents).toEqual(
+        expect.arrayContaining([
+          "Name",
+          "Role",
+          "Alice",
+          "Engineer",
+          "Bob",
+          "Designer",
+        ]),
+      );
+    });
+  });
+
+  it("should support quoted values containing commas", async () => {
+    const csv = 'Name,Notes\nAlice,"loves, commas"';
+
+    pasteWithCtrlCmdV(csv);
+
+    await waitFor(() => {
+      const rectangles = h.elements.filter(
+        (element) => element.type === "rectangle",
+      );
+      const textContents = h.elements
+        .map((element) => (element.type === "text" ? element.text : null))
+        .filter((text): text is string => !!text);
+
+      expect(rectangles).toHaveLength(4);
+      expect(textContents).toEqual(
+        expect.arrayContaining(["Name", "Notes", "Alice", "loves, commas"]),
+      );
+    });
+  });
+
+  it("should fallback to plain text for malformed csv", async () => {
+    const csv = '"Name","Role\nAlice,Engineer';
+
+    pasteWithCtrlCmdV(csv);
+
+    await waitFor(() => {
+      const rectangles = h.elements.filter(
+        (element) => element.type === "rectangle",
+      );
+      const textContents = h.elements
+        .map((element) => (element.type === "text" ? element.text : null))
+        .filter((text): text is string => !!text);
+
+      expect(rectangles).toHaveLength(0);
+      expect(textContents).toEqual(
+        expect.arrayContaining(['"Name","Role', "Alice,Engineer"]),
+      );
+    });
+  });
+});
