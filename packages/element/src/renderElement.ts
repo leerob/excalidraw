@@ -82,6 +82,35 @@ import type {
 
 import type { RoughCanvas } from "roughjs/bin/canvas";
 
+const appendAgentDebugLog = (
+  hypothesisId: string,
+  location: string,
+  message: string,
+  data: Record<string, unknown>,
+) => {
+  if (typeof process === "undefined" || !process.versions?.node) {
+    return;
+  }
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval
+    const nodeRequire = (0, eval)("require") as (
+      id: string,
+    ) => { appendFileSync: (path: string, content: string) => void };
+    nodeRequire("fs").appendFileSync(
+      "/opt/cursor/logs/debug.log",
+      `${JSON.stringify({
+        hypothesisId,
+        location,
+        message,
+        data,
+        timestamp: Date.now(),
+      })}\n`,
+    );
+  } catch {
+    // no-op for browser runtime
+  }
+};
+
 const isPendingImageElement = (
   element: ExcalidrawElement,
   renderConfig: StaticCanvasRenderConfig,
@@ -718,12 +747,39 @@ const drawElementFromCanvas = (
     // revert afterwards we don't have account for it during drawing
     context.translate(-cx, -cy);
 
+    const canvasDrawX =
+      (x1 + appState.scrollX) * window.devicePixelRatio -
+      (padding * elementWithCanvas.scale) / elementWithCanvas.scale;
+    const canvasDrawY =
+      (y1 + appState.scrollY) * window.devicePixelRatio -
+      (padding * elementWithCanvas.scale) / elementWithCanvas.scale;
+    const hasCircleOutlineArrowhead =
+      isArrowElement(element) &&
+      (element.startArrowhead === "circle_outline" ||
+        element.endArrowhead === "circle_outline");
+
+    // #region agent log
+    if (hasCircleOutlineArrowhead) {
+      appendAgentDebugLog(
+        "B",
+        "packages/element/src/renderElement.ts:drawElementFromCanvas",
+        "Arrow drawImage destination metrics",
+        {
+          elementId: element.id,
+          drawX: canvasDrawX,
+          drawY: canvasDrawY,
+          drawXFractional: canvasDrawX % 1,
+          drawYFractional: canvasDrawY % 1,
+          devicePixelRatio: window.devicePixelRatio,
+        },
+      );
+    }
+    // #endregion
+
     context.drawImage(
       elementWithCanvas.canvas!,
-      (x1 + appState.scrollX) * window.devicePixelRatio -
-        (padding * elementWithCanvas.scale) / elementWithCanvas.scale,
-      (y1 + appState.scrollY) * window.devicePixelRatio -
-        (padding * elementWithCanvas.scale) / elementWithCanvas.scale,
+      canvasDrawX,
+      canvasDrawY,
       elementWithCanvas.canvas!.width / elementWithCanvas.scale,
       elementWithCanvas.canvas!.height / elementWithCanvas.scale,
     );
@@ -998,17 +1054,36 @@ export const renderElement = (
         }
 
         const currentImageSmoothingStatus = context.imageSmoothingEnabled;
+        const shouldDisableImageSmoothing =
+          !appState?.shouldCacheIgnoreZoom &&
+          (!element.angle || isRightAngleRads(element.angle));
+        const hasCircleOutlineArrowhead =
+          isArrowElement(element) &&
+          (element.startArrowhead === "circle_outline" ||
+            element.endArrowhead === "circle_outline");
+
+        // #region agent log
+        if (hasCircleOutlineArrowhead) {
+          appendAgentDebugLog(
+            "A",
+            "packages/element/src/renderElement.ts:renderElement",
+            "Image smoothing precheck for circle outline arrow",
+            {
+              elementId: element.id,
+              angle: element.angle,
+              shouldCacheIgnoreZoom: !!appState?.shouldCacheIgnoreZoom,
+              isRightAngle: isRightAngleRads(element.angle),
+              shouldDisableImageSmoothing,
+              currentImageSmoothingStatus,
+            },
+          );
+        }
+        // #endregion
 
         if (
           // do not disable smoothing during zoom as blurry shapes look better
           // on low resolution (while still zooming in) than sharp ones
-          !appState?.shouldCacheIgnoreZoom &&
-          // angle is 0 -> always disable smoothing
-          (!element.angle ||
-            // or check if angle is a right angle in which case we can still
-            // disable smoothing without adversely affecting the result
-            // We need less-than comparison because of FP artihmetic
-            isRightAngleRads(element.angle))
+          shouldDisableImageSmoothing
         ) {
           // Disabling smoothing makes output much sharper, especially for
           // text. Unless for non-right angles, where the aliasing is really
@@ -1019,6 +1094,20 @@ export const renderElement = (
           //
           context.imageSmoothingEnabled = false;
         }
+
+        // #region agent log
+        if (hasCircleOutlineArrowhead) {
+          appendAgentDebugLog(
+            "A",
+            "packages/element/src/renderElement.ts:renderElement",
+            "Image smoothing post-branch for circle outline arrow",
+            {
+              elementId: element.id,
+              currentImageSmoothingStatus: context.imageSmoothingEnabled,
+            },
+          );
+        }
+        // #endregion
 
         if (
           element.id === appState.croppingElementId &&
