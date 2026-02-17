@@ -30,14 +30,12 @@ export const createTableTemplateElements = () => {
         roughness: 0,
         strokeWidth: 1,
         fillStyle: "solid",
-        backgroundColor:
-          row === 0 ? HEADER_BACKGROUND_COLOR : "transparent",
+        backgroundColor: row === 0 ? HEADER_BACKGROUND_COLOR : "transparent",
         label: label
           ? {
               text: label,
               fontSize: 20,
-              strokeColor:
-                row === 0 ? HEADER_TEXT_COLOR : BODY_TEXT_COLOR,
+              strokeColor: row === 0 ? HEADER_TEXT_COLOR : BODY_TEXT_COLOR,
             }
           : undefined,
       });

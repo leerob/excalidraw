@@ -3,7 +3,9 @@ import { createTableTemplateElements } from "../data/tableTemplate";
 describe("table template", () => {
   it("creates a 4x5 table with header and row labels", () => {
     const elements = createTableTemplateElements();
-    const rectangles = elements.filter((element) => element.type === "rectangle");
+    const rectangles = elements.filter(
+      (element) => element.type === "rectangle",
+    );
     const textLabels = elements
       .map((element) => (element.type === "text" ? element.text : null))
       .filter((text): text is string => !!text);
