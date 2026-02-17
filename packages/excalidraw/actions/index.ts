@@ -19,6 +19,7 @@ export {
   actionChangeTextAlign,
   actionChangeVerticalAlign,
   actionChangeArrowProperties,
+  actionToggleLatex,
 } from "./actionProperties";
 
 export {
