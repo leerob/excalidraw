@@ -75,6 +75,9 @@ export const redrawTextBoundingBox = (
 
   boundTextUpdates.text = textElement.text;
 
+  let boundTextWidth: number;
+  let boundTextHeight: number;
+
   if (isLatexText(textElement)) {
     const latexMetrics = measureLatex(
       textElement.originalText,
@@ -83,6 +86,8 @@ export const redrawTextBoundingBox = (
     boundTextUpdates.width = latexMetrics.width;
     boundTextUpdates.height = latexMetrics.height;
     boundTextUpdates.text = textElement.originalText;
+    boundTextWidth = latexMetrics.width;
+    boundTextHeight = latexMetrics.height;
   } else {
     if (container || !textElement.autoResize) {
       maxWidth = container
@@ -106,6 +111,8 @@ export const redrawTextBoundingBox = (
       boundTextUpdates.width = metrics.width;
     }
     boundTextUpdates.height = metrics.height;
+    boundTextWidth = metrics.width;
+    boundTextHeight = metrics.height;
   }
 
   if (container) {
@@ -115,18 +122,21 @@ export const redrawTextBoundingBox = (
     );
     const maxContainerWidth = getBoundTextMaxWidth(container, textElement);
 
-    if (!isArrowElement(container) && metrics.height > maxContainerHeight) {
+    if (
+      !isArrowElement(container) &&
+      boundTextHeight > maxContainerHeight
+    ) {
       const nextHeight = computeContainerDimensionForBoundText(
-        metrics.height,
+        boundTextHeight,
         container.type,
       );
       scene.mutateElement(container, { height: nextHeight });
       updateOriginalContainerCache(container.id, nextHeight);
     }
 
-    if (metrics.width > maxContainerWidth) {
+    if (boundTextWidth > maxContainerWidth) {
       const nextWidth = computeContainerDimensionForBoundText(
-        metrics.width,
+        boundTextWidth,
         container.type,
       );
       scene.mutateElement(container, { width: nextWidth });
