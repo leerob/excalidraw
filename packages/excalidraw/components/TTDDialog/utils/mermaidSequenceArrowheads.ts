@@ -2,7 +2,9 @@ import type { Arrowhead } from "@excalidraw/element/types";
 
 import type { MermaidToExcalidrawResult } from "@excalidraw/mermaid-to-excalidraw/dist/interfaces";
 
-const SEQUENCE_ARROW_TOKEN_TO_END_ARROWHEAD = [
+const SEQUENCE_ARROW_TOKEN_TO_END_ARROWHEAD: ReadonlyArray<
+  readonly [string, Arrowhead | null]
+> = [
   ["-->>", "triangle"],
   ["->>", "triangle"],
   ["--)", "arrow"],
@@ -11,7 +13,7 @@ const SEQUENCE_ARROW_TOKEN_TO_END_ARROWHEAD = [
   ["-x", "arrow"],
   ["-->", null],
   ["->", null],
-] as const satisfies readonly (readonly [string, Arrowhead | null])[];
+];
 
 const isSequenceDiagramDefinition = (mermaidDefinition: string) => {
   const lines = mermaidDefinition.split(/\r?\n/);

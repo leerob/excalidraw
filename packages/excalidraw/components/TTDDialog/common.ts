@@ -11,11 +11,11 @@ import {
   exportToCanvas,
   THEME,
 } from "../../index";
+
 import { normalizeSequenceArrowheads } from "./utils/mermaidSequenceArrowheads";
 
-import type { MermaidToExcalidrawLibProps } from "./types";
-
 import type { AppClassProperties, BinaryFiles } from "../../types";
+import type { MermaidToExcalidrawLibProps } from "./types";
 
 export const resetPreview = ({
   canvasRef,

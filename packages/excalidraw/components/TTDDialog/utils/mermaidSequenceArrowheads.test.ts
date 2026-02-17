@@ -3,12 +3,13 @@ import type { MermaidToExcalidrawResult } from "@excalidraw/mermaid-to-excalidra
 
 import { normalizeSequenceArrowheads } from "./mermaidSequenceArrowheads";
 
-const createArrowElement = (endArrowhead: Arrowhead | null = "arrow") =>
-  ({
+const createArrowElement = (endArrowhead: Arrowhead | null = "arrow") => {
+  return {
     type: "arrow",
     startArrowhead: null,
     endArrowhead,
-  }) as unknown as MermaidToExcalidrawResult["elements"][number];
+  } as unknown as MermaidToExcalidrawResult["elements"][number];
+};
 
 describe("normalizeSequenceArrowheads", () => {
   it("maps `->>` and `-->>` sequence arrows to `triangle`", () => {
