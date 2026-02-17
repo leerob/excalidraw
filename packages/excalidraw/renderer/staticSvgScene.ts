@@ -29,6 +29,7 @@ import {
 } from "@excalidraw/element";
 
 import { getContainingFrame } from "@excalidraw/element";
+import { renderLatexTextToSvg } from "@excalidraw/element";
 
 import { getCornerRadius, isPathALoop } from "@excalidraw/element";
 
@@ -645,6 +646,31 @@ const renderElementToSvg = (
             offsetY || 0
           }) rotate(${degree} ${cx} ${cy})`,
         );
+
+        const textColor =
+          renderConfig.theme === THEME.DARK
+            ? applyDarkModeFilter(element.strokeColor)
+            : element.strokeColor;
+
+        if (
+          renderLatexTextToSvg({
+            svgRoot,
+            parentNode: node,
+            element,
+            color: textColor,
+          })
+        ) {
+          const g = maybeWrapNodesInFrameClipPath(
+            element,
+            root,
+            [node],
+            renderConfig.frameRendering,
+            elementsMap,
+          );
+          addToRoot(g || node, element);
+          break;
+        }
+
         const lines = element.text.replace(/\r\n?/g, "\n").split("\n");
         const lineHeightPx = getLineHeightInPx(
           element.fontSize,
@@ -677,9 +703,7 @@ const renderElementToSvg = (
           text.setAttribute("font-size", `${element.fontSize}px`);
           text.setAttribute(
             "fill",
-            renderConfig.theme === THEME.DARK
-              ? applyDarkModeFilter(element.strokeColor)
-              : element.strokeColor,
+            textColor,
           );
           text.setAttribute("text-anchor", textAnchor);
           text.setAttribute("style", "white-space: pre;");

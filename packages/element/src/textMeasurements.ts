@@ -8,6 +8,7 @@ import {
 } from "@excalidraw/common";
 
 import type { FontString, ExcalidrawTextElement } from "./types";
+import { containsLatexMath, measureLatexText } from "./latex";
 
 export const measureText = (
   text: string,
@@ -20,6 +21,13 @@ export const measureText = (
     // lines would be stripped from computation
     .map((x) => x || " ")
     .join("\n");
+  if (containsLatexMath(_text)) {
+    const latexMetrics = measureLatexText(_text, font, lineHeight);
+    if (latexMetrics) {
+      return latexMetrics;
+    }
+  }
+
   const fontSize = parseFloat(font);
   const height = getTextHeight(_text, fontSize, lineHeight);
   const width = getTextWidth(_text, font);

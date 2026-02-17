@@ -19,12 +19,14 @@ import { getCommonBounds, getElementAbsoluteCoords } from "@excalidraw/element";
 
 import {
   getInitializedImageElements,
+  preloadLatexImagesForTextElements,
   updateImageCache,
 } from "@excalidraw/element";
 
 import { newElementWith } from "@excalidraw/element";
 
 import { isFrameLikeElement } from "@excalidraw/element";
+import { isTextElement } from "@excalidraw/element";
 
 import {
   getElementsOverlappingFrame,
@@ -215,6 +217,14 @@ export const exportToCanvas = async (
     exportingFrame,
     exportWithDarkMode: appState.exportWithDarkMode,
     frameRendering,
+  });
+
+  await preloadLatexImagesForTextElements({
+    elements: elementsForRender.filter(isTextElement),
+    getColor: (element) =>
+      appState.exportWithDarkMode
+        ? applyDarkModeFilter(element.strokeColor)
+        : element.strokeColor,
   });
 
   if (exportingFrame) {

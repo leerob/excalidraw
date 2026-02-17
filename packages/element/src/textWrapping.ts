@@ -1,6 +1,7 @@
 import { isDevEnv, isTestEnv } from "@excalidraw/common";
 
 import { charWidth, getLineWidth } from "./textMeasurements";
+import { containsLatexMath } from "./latex";
 
 import type { FontString } from "./types";
 
@@ -380,6 +381,12 @@ export const wrapText = (
   // computation, we need to make sure we don't continue as we'll end up
   // in an infinite loop
   if (!Number.isFinite(maxWidth) || maxWidth < 0) {
+    return text;
+  }
+
+  // Do not split LaTeX delimiters across lines. We prefer preserving
+  // expressions verbatim and letting containers grow when needed.
+  if (containsLatexMath(text)) {
     return text;
   }
 

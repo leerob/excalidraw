@@ -254,6 +254,7 @@ import {
   handleFocusPointHover,
   handleFocusPointPointerDown,
   handleFocusPointPointerUp,
+  LATEX_IMAGE_LOADED_EVENT,
   maybeHandleArrowPointlikeDrag,
   getUncroppedWidthAndHeight,
 } from "@excalidraw/element";
@@ -2995,6 +2996,10 @@ class App extends React.Component<AppProps, AppState> {
     }
   };
 
+  private onLatexImageLoaded = () => {
+    this.scene.triggerUpdate();
+  };
+
   private removeEventListeners() {
     this.onRemoveEventListenersEmitter.trigger();
   }
@@ -3041,6 +3046,12 @@ class App extends React.Component<AppProps, AppState> {
           this.fonts.onLoaded(fontFaces);
         },
         { passive: false },
+      ),
+      addEventListener(
+        window,
+        LATEX_IMAGE_LOADED_EVENT,
+        this.onLatexImageLoaded,
+        { passive: true },
       ),
       // Safari-only desktop pinch zoom
       addEventListener(

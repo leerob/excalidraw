@@ -65,6 +65,7 @@ import {
 } from "./typeChecks";
 import { getContainingFrame } from "./frame";
 import { getCornerRadius } from "./utils";
+import { containsLatexMath, drawLatexTextOnCanvas } from "./latex";
 
 import { ShapeCache } from "./shape";
 
@@ -144,6 +145,7 @@ export interface ExcalidrawElementWithCanvas {
   imageCrop: ExcalidrawImageElement["crop"] | null;
   containingFrameOpacity: number;
   boundTextCanvas: HTMLCanvasElement;
+  isCacheable: boolean;
 }
 
 const cappedElementCanvasSize = (
@@ -253,7 +255,7 @@ const generateElementCanvas = (
 
   const rc = rough.canvas(canvas);
 
-  drawElementOnCanvas(element, rc, context, renderConfig);
+  const isCacheable = drawElementOnCanvas(element, rc, context, renderConfig);
 
   context.restore();
 
@@ -335,6 +337,7 @@ const generateElementCanvas = (
     boundTextCanvas,
     angle: element.angle,
     imageCrop: isImageElement(element) ? element.crop : null,
+    isCacheable,
   };
 };
 
@@ -389,7 +392,7 @@ const drawElementOnCanvas = (
   rc: RoughCanvas,
   context: CanvasRenderingContext2D,
   renderConfig: StaticCanvasRenderConfig,
-) => {
+): boolean => {
   switch (element.type) {
     case "rectangle":
     case "iframe":
@@ -400,7 +403,7 @@ const drawElementOnCanvas = (
       context.lineCap = "round";
 
       rc.draw(ShapeCache.generateElementShape(element, renderConfig));
-      break;
+      return true;
     }
     case "arrow":
     case "line": {
@@ -412,7 +415,7 @@ const drawElementOnCanvas = (
           rc.draw(shape);
         },
       );
-      break;
+      return true;
     }
     case "freedraw": {
       // Draw directly to canvas
@@ -433,7 +436,7 @@ const drawElementOnCanvas = (
       }
 
       context.restore();
-      break;
+      return true;
     }
     case "image": {
       context.save();
@@ -541,10 +544,23 @@ const drawElementOnCanvas = (
         drawImagePlaceholder(element, context, renderConfig.theme);
       }
       context.restore();
-      break;
+      return true;
     }
     default: {
       if (isTextElement(element)) {
+        const textColor =
+          renderConfig.theme === THEME.DARK
+            ? applyDarkModeFilter(element.strokeColor)
+            : element.strokeColor;
+
+        if (containsLatexMath(element.text)) {
+          return drawLatexTextOnCanvas({
+            element,
+            context,
+            color: textColor,
+          });
+        }
+
         const rtl = isRTL(element.text);
         const shouldTemporarilyAttach = rtl && !context.canvas.isConnected;
         if (shouldTemporarilyAttach) {
@@ -555,10 +571,7 @@ const drawElementOnCanvas = (
         context.canvas.setAttribute("dir", rtl ? "rtl" : "ltr");
         context.save();
         context.font = getFontString(element);
-        context.fillStyle =
-          renderConfig.theme === THEME.DARK
-            ? applyDarkModeFilter(element.strokeColor)
-            : element.strokeColor;
+        context.fillStyle = textColor;
         context.textAlign = element.textAlign as CanvasTextAlign;
 
         // Canvas does not support multiline text by default
@@ -593,6 +606,7 @@ const drawElementOnCanvas = (
         if (shouldTemporarilyAttach) {
           context.canvas.remove();
         }
+        return true;
       } else {
         throw new Error(`Unimplemented type ${element.type}`);
       }
@@ -655,7 +669,11 @@ const generateElementWithCanvas = (
       return null;
     }
 
-    elementWithCanvasCache.set(element, elementWithCanvas);
+    if (elementWithCanvas.isCacheable) {
+      elementWithCanvasCache.set(element, elementWithCanvas);
+    } else {
+      elementWithCanvasCache.delete(element);
+    }
 
     return elementWithCanvas;
   }
