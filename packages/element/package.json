@@ -64,6 +64,10 @@
   },
   "dependencies": {
     "@excalidraw/common": "0.18.0",
-    "@excalidraw/math": "0.18.0"
+    "@excalidraw/math": "0.18.0",
+    "katex": "0.16.21"
+  },
+  "devDependencies": {
+    "@types/katex": "0.16.8"
   }
 }

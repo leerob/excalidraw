@@ -5864,6 +5864,9 @@ class App extends React.Component<AppProps, AppState> {
             : container.angle
           : (0 as Radians),
         frameId: topLayerFrame ? topLayerFrame.id : null,
+        ...(this.state.currentItemIsLatex
+          ? { customData: { isLatex: true } }
+          : {}),
       });
 
     if (!existingTextElement && shouldBindToContainer && container) {
