@@ -352,9 +352,7 @@ const getArrowheadShapes = (
         roughness: Math.min(0.5, options.roughness || 0),
       };
 
-      return [
-        generator.circle(x, y, diameter, circleOptions),
-      ];
+      return [generator.circle(x, y, diameter, circleOptions)];
     }
     case "triangle":
     case "triangle_outline": {

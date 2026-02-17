@@ -2,7 +2,10 @@ import { pointFrom } from "@excalidraw/math";
 
 import { shouldDisableImageSmoothingForElement } from "@excalidraw/element";
 
+import type { LocalPoint } from "@excalidraw/math";
+
 import { Excalidraw } from "../index";
+
 import { API } from "./helpers/api";
 import {
   act,
@@ -12,7 +15,6 @@ import {
   waitFor,
 } from "./test-utils";
 
-import type { LocalPoint } from "@excalidraw/math";
 import type { NormalizedZoomValue } from "../types";
 
 describe("Issue #10608 - circle outline arrow seam", () => {
@@ -71,9 +73,12 @@ describe("Issue #10608 - circle outline arrow seam", () => {
     });
 
     expect(
-      shouldDisableImageSmoothingForElement(window.h.elements[0] as any, {
-        shouldCacheIgnoreZoom: false,
-      } as any),
+      shouldDisableImageSmoothingForElement(
+        window.h.elements[0] as any,
+        {
+          shouldCacheIgnoreZoom: false,
+        } as any,
+      ),
     ).toBe(false);
   });
 });
