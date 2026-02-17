@@ -143,7 +143,11 @@ export const createTableElementsFromCSV = (
   let rowY = 0;
   for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
     let columnX = 0;
-    for (let columnIndex = 0; columnIndex < rows[rowIndex].length; columnIndex++) {
+    for (
+      let columnIndex = 0;
+      columnIndex < rows[rowIndex].length;
+      columnIndex++
+    ) {
       const cellText = rows[rowIndex][columnIndex];
       const isHeaderRow = rowIndex === 0;
 
@@ -162,9 +166,7 @@ export const createTableElementsFromCSV = (
           ? {
               text: cellText,
               fontSize: 20,
-              strokeColor: isHeaderRow
-                ? HEADER_TEXT_COLOR
-                : BODY_TEXT_COLOR,
+              strokeColor: isHeaderRow ? HEADER_TEXT_COLOR : BODY_TEXT_COLOR,
             }
           : undefined,
       });

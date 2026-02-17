@@ -31,10 +31,12 @@ describe("csv table helpers", () => {
       const elements = createTableElementsFromCSV("A,B\n1,2");
 
       expect(elements).not.toBe(null);
-      expect(elements?.filter((element) => element.type === "rectangle")).toHaveLength(
-        4,
-      );
-      expect(elements?.filter((element) => element.type === "text")).toHaveLength(4);
+      expect(
+        elements?.filter((element) => element.type === "rectangle"),
+      ).toHaveLength(4);
+      expect(
+        elements?.filter((element) => element.type === "text"),
+      ).toHaveLength(4);
     });
   });
 });
