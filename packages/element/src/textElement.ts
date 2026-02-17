@@ -29,6 +29,7 @@ import {
   isArrowElement,
   isTextElement,
 } from "./typeChecks";
+import { isLatexText, measureLatex } from "./latexRenderer";
 
 import type { Scene } from "./Scene";
 
@@ -74,28 +75,38 @@ export const redrawTextBoundingBox = (
 
   boundTextUpdates.text = textElement.text;
 
-  if (container || !textElement.autoResize) {
-    maxWidth = container
-      ? getBoundTextMaxWidth(container, textElement)
-      : textElement.width;
-    boundTextUpdates.text = wrapText(
+  if (isLatexText(textElement)) {
+    const latexMetrics = measureLatex(
       textElement.originalText,
-      getFontString(textElement),
-      maxWidth,
+      textElement.fontSize,
     );
-  }
+    boundTextUpdates.width = latexMetrics.width;
+    boundTextUpdates.height = latexMetrics.height;
+    boundTextUpdates.text = textElement.originalText;
+  } else {
+    if (container || !textElement.autoResize) {
+      maxWidth = container
+        ? getBoundTextMaxWidth(container, textElement)
+        : textElement.width;
+      boundTextUpdates.text = wrapText(
+        textElement.originalText,
+        getFontString(textElement),
+        maxWidth,
+      );
+    }
 
-  const metrics = measureText(
-    boundTextUpdates.text,
-    getFontString(textElement),
-    textElement.lineHeight,
-  );
+    const metrics = measureText(
+      boundTextUpdates.text,
+      getFontString(textElement),
+      textElement.lineHeight,
+    );
 
-  // Note: only update width for unwrapped text and bound texts (which always have autoResize set to true)
-  if (textElement.autoResize) {
-    boundTextUpdates.width = metrics.width;
+    // Note: only update width for unwrapped text and bound texts (which always have autoResize set to true)
+    if (textElement.autoResize) {
+      boundTextUpdates.width = metrics.width;
+    }
+    boundTextUpdates.height = metrics.height;
   }
-  boundTextUpdates.height = metrics.height;
 
   if (container) {
     const maxContainerHeight = getBoundTextMaxHeight(

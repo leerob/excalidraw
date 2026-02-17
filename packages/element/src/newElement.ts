@@ -26,6 +26,7 @@ import { normalizeText, measureText } from "./textMeasurements";
 import { wrapText } from "./textWrapping";
 
 import { isLineElement } from "./typeChecks";
+import { isLatexText, measureLatex } from "./latexRenderer";
 
 import type {
   ExcalidrawElement,
@@ -426,6 +427,18 @@ export const refreshTextDimensions = (
   if (textElement.isDeleted) {
     return;
   }
+
+  if (isLatexText(textElement)) {
+    const measured = measureLatex(text, textElement.fontSize);
+    return {
+      text,
+      x: textElement.x,
+      y: textElement.y,
+      width: measured.width,
+      height: measured.height,
+    };
+  }
+
   if (container || !textElement.autoResize) {
     text = wrapText(
       text,

@@ -50,9 +50,11 @@ import {
   isLineElement,
   isTextElement,
   isUsingAdaptiveRadius,
+  isLatexText,
+  measureLatex,
 } from "@excalidraw/element";
 
-import { hasStrokeColor } from "@excalidraw/element";
+import { hasStrokeColor, clearLatexCache } from "@excalidraw/element";
 
 import {
   updateElbowArrowPoints,
@@ -1968,6 +1970,134 @@ export const actionChangeArrowType = register<keyof typeof ARROW_TYPE>({
             onChange={(value) => updateData(value)}
           />
         </div>
+      </fieldset>
+    );
+  },
+});
+
+export const actionToggleLatex = register<boolean>({
+  name: "toggleLatex",
+  label: "labels.latex",
+  trackEvent: { category: "element", action: "toggleLatex" },
+  perform: (elements, appState, value, app) => {
+    clearLatexCache();
+    return {
+      elements: changeProperty(
+        elements,
+        appState,
+        (oldElement) => {
+          if (isTextElement(oldElement)) {
+            const isLatex = value ?? !isLatexText(oldElement);
+            const customData = {
+              ...(oldElement.customData || {}),
+              isLatex,
+            };
+            let width = oldElement.width;
+            let height = oldElement.height;
+
+            if (isLatex) {
+              const measured = measureLatex(
+                oldElement.originalText,
+                oldElement.fontSize,
+              );
+              width = measured.width;
+              height = measured.height;
+            }
+
+            const newElement = newElementWith(oldElement, {
+              customData,
+              width,
+              height,
+            });
+
+            if (!isLatex) {
+              redrawTextBoundingBox(
+                newElement,
+                app.scene.getContainerElement(oldElement),
+                app.scene,
+              );
+            }
+
+            return newElement;
+          }
+          return oldElement;
+        },
+        true,
+      ),
+      appState: {
+        ...appState,
+        currentItemIsLatex: value ?? !appState.currentItemIsLatex,
+      },
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
+    };
+  },
+  PanelComponent: ({ elements, appState, updateData, app }) => {
+    const isActive = getFormValue(
+      elements,
+      app,
+      (element) => {
+        if (isTextElement(element)) {
+          return isLatexText(element);
+        }
+        const boundTextElement = getBoundTextElement(
+          element,
+          app.scene.getNonDeletedElementsMap(),
+        );
+        if (boundTextElement) {
+          return isLatexText(boundTextElement);
+        }
+        return null;
+      },
+      (element) =>
+        isTextElement(element) ||
+        getBoundTextElement(
+          element,
+          app.scene.getNonDeletedElementsMap(),
+        ) !== null,
+      (hasSelection) =>
+        hasSelection ? null : appState.currentItemIsLatex,
+    );
+
+    return (
+      <fieldset>
+        <legend>{t("labels.latex")}</legend>
+        <button
+          className={`ToolIcon_type_checkbox ${isActive ? "is-active" : ""}`}
+          data-testid="latex-toggle"
+          onClick={() => updateData(!isActive)}
+          title={t("labels.latex")}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            padding: "0.4rem 0.75rem",
+            borderRadius: "0.5rem",
+            border: isActive
+              ? "1px solid var(--color-primary)"
+              : "1px solid var(--default-border-color)",
+            background: isActive
+              ? "var(--color-primary-light)"
+              : "transparent",
+            cursor: "pointer",
+            fontSize: "0.85rem",
+            fontWeight: isActive ? 600 : 400,
+            color: isActive
+              ? "var(--color-primary)"
+              : "var(--text-primary-color)",
+            width: "100%",
+            justifyContent: "center",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: '"Times New Roman", serif',
+              fontStyle: "italic",
+              fontSize: "1.1em",
+            }}
+          >
+            LaTeX
+          </span>
+        </button>
       </fieldset>
     );
   },

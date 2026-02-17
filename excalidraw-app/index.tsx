@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { registerSW } from "virtual:pwa-register";
 
+import "katex/dist/katex.min.css";
 import "../excalidraw-app/sentry";
 
 import ExcalidrawApp from "./App";
