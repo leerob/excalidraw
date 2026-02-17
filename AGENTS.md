@@ -16,7 +16,7 @@ Excalidraw is a Yarn workspaces monorepo containing a whiteboard web app (`excal
 See `CLAUDE.md` and `package.json` scripts for the full list. The most important:
 
 | Command | Purpose |
-|---------|---------|
+| --- | --- |
 | `yarn start` | Dev server on port 3001 |
 | `yarn test:update` | Run all tests with snapshot updates (non-interactive) |
 | `yarn test:typecheck` | TypeScript type checking via `tsc` |

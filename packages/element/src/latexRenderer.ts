@@ -28,7 +28,7 @@ const getKatexCss = (): string => {
             rule.cssText.includes("katex")
           ) {
             if (!rule.cssText.startsWith("@font-face")) {
-              css += rule.cssText + "\n";
+              css += `${rule.cssText}\n`;
             }
           }
         }

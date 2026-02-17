@@ -2050,54 +2050,51 @@ export const actionToggleLatex = register<boolean>({
       },
       (element) =>
         isTextElement(element) ||
-        getBoundTextElement(
-          element,
-          app.scene.getNonDeletedElementsMap(),
-        ) !== null,
-      (hasSelection) =>
-        hasSelection ? null : appState.currentItemIsLatex,
+        getBoundTextElement(element, app.scene.getNonDeletedElementsMap()) !==
+          null,
+      (hasSelection) => (hasSelection ? null : appState.currentItemIsLatex),
     );
 
     return (
       <fieldset>
         <legend>{t("labels.latex")}</legend>
-        <button
-          className={`ToolIcon_type_checkbox ${isActive ? "is-active" : ""}`}
-          data-testid="latex-toggle"
-          onClick={() => updateData(!isActive)}
-          title={t("labels.latex")}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            padding: "0.4rem 0.75rem",
-            borderRadius: "0.5rem",
-            border: isActive
-              ? "1px solid var(--color-primary)"
-              : "1px solid var(--default-border-color)",
-            background: isActive
-              ? "var(--color-primary-light)"
-              : "transparent",
-            cursor: "pointer",
-            fontSize: "0.85rem",
-            fontWeight: isActive ? 600 : 400,
-            color: isActive
-              ? "var(--color-primary)"
-              : "var(--text-primary-color)",
-            width: "100%",
-            justifyContent: "center",
-          }}
-        >
-          <span
+        <div className="buttonList">
+          <button
+            data-testid="latex-toggle"
+            onClick={() => updateData(!isActive)}
+            title={t("labels.latex")}
+            className={isActive ? "active" : ""}
             style={{
-              fontFamily: '"Times New Roman", serif',
-              fontStyle: "italic",
-              fontSize: "1.1em",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "0.5rem 1rem",
+              borderRadius: "var(--border-radius-lg)",
+              border: isActive
+                ? "1px solid var(--color-primary)"
+                : "1px solid var(--color-gray-30, #ccc)",
+              background: isActive
+                ? "var(--color-primary-light, rgba(105, 101, 219, 0.12))"
+                : "var(--island-bg-color, #fff)",
+              cursor: "pointer",
+              color: isActive
+                ? "var(--color-primary)"
+                : "var(--color-on-surface, #333)",
+              width: "100%",
+              minHeight: "2rem",
             }}
           >
-            LaTeX
-          </span>
-        </button>
+            <span
+              style={{
+                fontFamily: '"Times New Roman", serif',
+                fontStyle: "italic",
+                fontSize: "1rem",
+              }}
+            >
+              LaTeX
+            </span>
+          </button>
+        </div>
       </fieldset>
     );
   },

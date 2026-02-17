@@ -122,10 +122,7 @@ export const redrawTextBoundingBox = (
     );
     const maxContainerWidth = getBoundTextMaxWidth(container, textElement);
 
-    if (
-      !isArrowElement(container) &&
-      boundTextHeight > maxContainerHeight
-    ) {
+    if (!isArrowElement(container) && boundTextHeight > maxContainerHeight) {
       const nextHeight = computeContainerDimensionForBoundText(
         boundTextHeight,
         container.type,
