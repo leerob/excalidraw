@@ -1,4 +1,8 @@
 import { pointFrom } from "@excalidraw/math";
+import rough from "roughjs/bin/rough";
+
+import { arrayToMap } from "@excalidraw/common";
+import { renderElement } from "@excalidraw/element";
 
 import { Excalidraw } from "../index";
 import { API } from "./helpers/api";
@@ -66,6 +70,32 @@ describe("Issue #10608 - circle outline arrow seam", () => {
     await waitFor(() => {
       expect(window.h.elements).toHaveLength(1);
       expect(window.h.elements[0].id).toBe("y6OsduWfxPy2khIdz9CdY");
+    });
+
+    const elementsMap = arrayToMap(window.h.elements);
+    const renderConfig = {
+      canvasBackgroundColor: "#ffffff",
+      imageCache: new Map(),
+      renderGrid: false,
+      isExporting: false,
+      embedsValidationStatus: null,
+      elementsPendingErasure: new Set(),
+      pendingFlowchartNodes: null,
+      theme: window.h.state.theme,
+    };
+    const staticContext = GlobalTestState.canvas.getContext("2d")!;
+    const rc = rough.canvas(GlobalTestState.canvas);
+
+    act(() => {
+      renderElement(
+        window.h.elements[0] as any,
+        elementsMap as any,
+        elementsMap as any,
+        rc,
+        staticContext,
+        renderConfig as any,
+        window.h.state,
+      );
     });
   });
 });
