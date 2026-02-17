@@ -805,10 +805,11 @@ export const renderLatexTextToSvg = ({
       const style = parsedSvg.getAttribute("style");
       parsedSvg.setAttribute("style", `${style ? `${style};` : ""}color:${color};`);
 
-      const imported = svgRoot.ownerDocument.importNode(
-        parsedSvg,
-        true,
-      ) as SVGElement;
+      const imported = svgRoot.ownerDocument.importNode(parsedSvg, true);
+      if (!(imported instanceof Element)) {
+        cursorX += run.width;
+        continue;
+      }
       if (!imported.getAttribute("xmlns")) {
         imported.setAttribute("xmlns", "http://www.w3.org/2000/svg");
       }
