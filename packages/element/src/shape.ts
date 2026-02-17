@@ -84,9 +84,6 @@ const appendAgentDebugLog = (
   message: string,
   data: Record<string, unknown>,
 ) => {
-  if (typeof process === "undefined" || !process.versions?.node) {
-    return;
-  }
   try {
     // eslint-disable-next-line @typescript-eslint/no-implied-eval
     const nodeRequire = (0, eval)("require") as (
