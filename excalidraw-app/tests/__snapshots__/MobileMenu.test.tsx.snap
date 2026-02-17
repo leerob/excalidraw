@@ -121,6 +121,60 @@ exports[`Test MobileMenu > should initialize with welcome screen and hide once u
               fill="none"
               stroke="none"
             />
+            <path
+              d="M3 6h18"
+            />
+            <path
+              d="M3 12h18"
+            />
+            <path
+              d="M3 18h18"
+            />
+            <path
+              d="M6 3v18"
+            />
+            <path
+              d="M12 3v18"
+            />
+            <path
+              d="M18 3v18"
+            />
+          </g>
+        </svg>
+      </div>
+      <div
+        class="welcome-screen-menu-item__text"
+      >
+        Insert table template
+      </div>
+    </button>
+    <button
+      class="welcome-screen-menu-item "
+      type="button"
+    >
+      <div
+        class="welcome-screen-menu-item__icon"
+      >
+        <svg
+          aria-hidden="true"
+          class=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+        >
+          <g
+            stroke-width="1.5"
+          >
+            <path
+              d="M0 0h24v24H0z"
+              fill="none"
+              stroke="none"
+            />
             <circle
               cx="12"
               cy="12"

@@ -2,8 +2,10 @@ import {
   loginIcon,
   ExcalLogo,
   eyeIcon,
+  gridIcon,
 } from "@excalidraw/excalidraw/components/icons";
 import { MainMenu } from "@excalidraw/excalidraw/index";
+import { useI18n } from "@excalidraw/excalidraw/i18n";
 import React from "react";
 
 import { isDevEnv } from "@excalidraw/common";
@@ -22,10 +24,20 @@ export const AppMainMenu: React.FC<{
   theme: Theme | "system";
   setTheme: (theme: Theme | "system") => void;
   refresh: () => void;
+  onInsertTableTemplate: () => void;
 }> = React.memo((props) => {
+  const { t } = useI18n();
+
   return (
     <MainMenu>
       <MainMenu.DefaultItems.LoadScene />
+      <MainMenu.Item
+        icon={gridIcon}
+        onSelect={props.onInsertTableTemplate}
+        data-testid="insert-table-template-button"
+      >
+        {t("labels.insertTableTemplate")}
+      </MainMenu.Item>
       <MainMenu.DefaultItems.SaveToActiveFile />
       <MainMenu.DefaultItems.Export />
       <MainMenu.DefaultItems.SaveAsImage />

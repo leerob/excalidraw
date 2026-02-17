@@ -218,6 +218,14 @@ export const copyToClipboard = async (
 const parsePotentialSpreadsheet = (
   text: string,
 ): { spreadsheet: Spreadsheet } | { errorMessage: string } | null => {
+  const containsTabs = text.includes("\t");
+
+  // CSV is handled separately and pasted as a table.
+  // Keep spreadsheet parsing for tab-delimited data from spreadsheet apps.
+  if (!containsTabs) {
+    return null;
+  }
+
   const result = tryParseSpreadsheet(text);
   if (result.type === VALID_SPREADSHEET) {
     return { spreadsheet: result.spreadsheet };

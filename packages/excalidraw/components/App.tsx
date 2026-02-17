@@ -353,6 +353,7 @@ import {
 import { exportCanvas, loadFromBlob } from "../data";
 import Library, { distributeLibraryItemsOnSquareGrid } from "../data/library";
 import { restoreAppState, restoreElements } from "../data/restore";
+import { createTableElementsFromCSV } from "../data/csvTable";
 import { getCenter, getDistance } from "../gesture";
 import { History } from "../history";
 import { defaultLang, getLanguage, languages, setLanguage, t } from "../i18n";
@@ -3518,6 +3519,20 @@ class App extends React.Component<AppProps, AppState> {
         console.warn(
           `parsing pasted text as mermaid definition failed: ${err.message}`,
         );
+      }
+    }
+
+    // ------------------- CSV table -------------------
+    if (!isPlainPaste) {
+      const tableElements = createTableElementsFromCSV(data.text);
+      if (tableElements) {
+        this.addElementsFromPasteOrLibrary({
+          elements: tableElements,
+          files: null,
+          position:
+            this.editorInterface.formFactor === "desktop" ? "cursor" : "center",
+        });
+        return;
       }
     }
 

@@ -30,6 +30,7 @@ import {
   resolvablePromise,
   isRunningInIframe,
   isDevEnv,
+  viewportCoordsToSceneCoords,
 } from "@excalidraw/common";
 import polyfill from "@excalidraw/excalidraw/polyfill";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -42,19 +43,24 @@ import {
   XBrandIcon,
   DiscordIcon,
   ExcalLogo,
+  gridIcon,
   usersIcon,
   exportToPlus,
   share,
   youtubeIcon,
 } from "@excalidraw/excalidraw/components/icons";
-import { isElementLink } from "@excalidraw/element";
 import {
   bumpElementVersions,
   restoreAppState,
   restoreElements,
 } from "@excalidraw/excalidraw/data/restore";
-import { newElementWith } from "@excalidraw/element";
-import { isInitializedImageElement } from "@excalidraw/element";
+import {
+  getCommonBounds,
+  isBoundToContainer,
+  isElementLink,
+  isInitializedImageElement,
+  newElementWith,
+} from "@excalidraw/element";
 import clsx from "clsx";
 import {
   parseLibraryTokensFromUrl,
@@ -127,6 +133,7 @@ import {
   localStorageQuotaExceededAtom,
 } from "./data/LocalData";
 import { isBrowserStorageStateNewer } from "./data/tabSync";
+import { createTableTemplateElements } from "./data/tableTemplate";
 import { ShareDialog, shareDialogStateAtom } from "./share/ShareDialog";
 import CollabError, { collabErrorIndicatorAtom } from "./collab/CollabError";
 import { useHandleAppTheme } from "./useHandleAppTheme";
@@ -773,6 +780,56 @@ const ExcalidrawWrapper = () => {
     [setShareDialogState],
   );
 
+  const onInsertTableTemplate = useCallback(() => {
+    if (!excalidrawAPI) {
+      return;
+    }
+
+    const tableTemplate = createTableTemplateElements();
+    const [minX, minY, maxX, maxY] = getCommonBounds(tableTemplate);
+    const appState = excalidrawAPI.getAppState();
+    const { x: centerX, y: centerY } = viewportCoordsToSceneCoords(
+      {
+        clientX: appState.offsetLeft + appState.width / 2,
+        clientY: appState.offsetTop + appState.height / 2,
+      },
+      appState,
+    );
+    const deltaX = centerX - (minX + (maxX - minX) / 2);
+    const deltaY = centerY - (minY + (maxY - minY) / 2);
+    const insertedElements = tableTemplate.map((element) =>
+      newElementWith(element, {
+        x: element.x + deltaX,
+        y: element.y + deltaY,
+      }),
+    );
+    const selectedElementIds = insertedElements.reduce(
+      (acc: Record<string, true>, element) => {
+        if (!isBoundToContainer(element)) {
+          acc[element.id] = true;
+        }
+        return acc;
+      },
+      {},
+    );
+
+    excalidrawAPI.updateScene({
+      elements: [
+        ...excalidrawAPI.getSceneElementsIncludingDeleted(),
+        ...insertedElements,
+      ],
+      appState: {
+        selectedElementIds,
+      },
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
+    });
+    excalidrawAPI.scrollToContent(insertedElements, {
+      fitToContent: false,
+      animate: false,
+    });
+    trackEvent("template", "insert_table", "ui");
+  }, [excalidrawAPI]);
+
   // browsers generally prevent infinite self-embedding, there are
   // cases where it still happens, and while we disallow self-embedding
   // by not whitelisting our own origin, this serves as an additional guard
@@ -920,10 +977,12 @@ const ExcalidrawWrapper = () => {
           theme={appTheme}
           setTheme={(theme) => setAppTheme(theme)}
           refresh={() => forceRefresh((prev) => !prev)}
+          onInsertTableTemplate={onInsertTableTemplate}
         />
         <AppWelcomeScreen
           onCollabDialogOpen={onCollabDialogOpen}
           isCollabEnabled={!isCollabDisabled}
+          onInsertTableTemplate={onInsertTableTemplate}
         />
         <OverwriteConfirmDialog>
           <OverwriteConfirmDialog.Actions.ExportToImage />
@@ -1015,6 +1074,21 @@ const ExcalidrawWrapper = () => {
                   type: "collaborationOnly",
                 });
               },
+            },
+            {
+              label: t("labels.insertTableTemplate"),
+              category: DEFAULT_CATEGORIES.elements,
+              predicate: true,
+              icon: gridIcon,
+              keywords: [
+                "table",
+                "template",
+                "grid",
+                "rows",
+                "columns",
+                "spreadsheet",
+              ],
+              perform: onInsertTableTemplate,
             },
             {
               label: t("roomDialog.button_stopSession"),
