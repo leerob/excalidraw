@@ -628,6 +628,22 @@ const drawElementOnCanvas = (
   }
 };
 
+const hasCircleOutlineArrowhead = (element: NonDeletedExcalidrawElement) =>
+  isArrowElement(element) &&
+  (element.startArrowhead === "circle_outline" ||
+    element.endArrowhead === "circle_outline");
+
+export const shouldDisableImageSmoothingForElement = (
+  element: NonDeletedExcalidrawElement,
+  appState: StaticCanvasAppState | InteractiveCanvasAppState,
+) => {
+  return (
+    !hasCircleOutlineArrowhead(element) &&
+    !appState?.shouldCacheIgnoreZoom &&
+    (!element.angle || isRightAngleRads(element.angle))
+  );
+};
+
 export const elementWithCanvasCache = new WeakMap<
   ExcalidrawElement,
   ExcalidrawElementWithCanvas
@@ -753,10 +769,7 @@ const drawElementFromCanvas = (
       (y1 + appState.scrollY) * window.devicePixelRatio -
       (padding * elementWithCanvas.scale) / elementWithCanvas.scale;
     const isArrow = isArrowElement(element);
-    const hasCircleOutlineArrowhead =
-      isArrow &&
-      (element.startArrowhead === "circle_outline" ||
-        element.endArrowhead === "circle_outline");
+    const hasCircleOutlineArrowheadOnArrow = hasCircleOutlineArrowhead(element);
 
     // #region agent log
     if (isArrow) {
@@ -766,7 +779,7 @@ const drawElementFromCanvas = (
         "Arrow drawImage destination metrics",
         {
           elementId: element.id,
-          hasCircleOutlineArrowhead,
+          hasCircleOutlineArrowhead: hasCircleOutlineArrowheadOnArrow,
           drawX: canvasDrawX,
           drawY: canvasDrawY,
           drawXFractional: canvasDrawX % 1,
@@ -1056,13 +1069,10 @@ export const renderElement = (
 
         const currentImageSmoothingStatus = context.imageSmoothingEnabled;
         const shouldDisableImageSmoothing =
-          !appState?.shouldCacheIgnoreZoom &&
-          (!element.angle || isRightAngleRads(element.angle));
+          shouldDisableImageSmoothingForElement(element, appState);
         const isArrow = isArrowElement(element);
-        const hasCircleOutlineArrowhead =
-          isArrow &&
-          (element.startArrowhead === "circle_outline" ||
-            element.endArrowhead === "circle_outline");
+        const hasCircleOutlineArrowheadOnArrow =
+          hasCircleOutlineArrowhead(element);
 
         // #region agent log
         if (isArrow) {
@@ -1072,7 +1082,7 @@ export const renderElement = (
             "Image smoothing precheck for circle outline arrow",
             {
               elementId: element.id,
-              hasCircleOutlineArrowhead,
+              hasCircleOutlineArrowhead: hasCircleOutlineArrowheadOnArrow,
               angle: element.angle,
               shouldCacheIgnoreZoom: !!appState?.shouldCacheIgnoreZoom,
               isRightAngle: isRightAngleRads(element.angle),
@@ -1106,7 +1116,7 @@ export const renderElement = (
             "Image smoothing post-branch for circle outline arrow",
             {
               elementId: element.id,
-              hasCircleOutlineArrowhead,
+              hasCircleOutlineArrowhead: hasCircleOutlineArrowheadOnArrow,
               currentImageSmoothingStatus: context.imageSmoothingEnabled,
             },
           );
