@@ -600,6 +600,22 @@ const drawElementOnCanvas = (
   }
 };
 
+const hasCircleOutlineArrowhead = (element: NonDeletedExcalidrawElement) =>
+  isArrowElement(element) &&
+  (element.startArrowhead === "circle_outline" ||
+    element.endArrowhead === "circle_outline");
+
+export const shouldDisableImageSmoothingForElement = (
+  element: NonDeletedExcalidrawElement,
+  appState: StaticCanvasAppState | InteractiveCanvasAppState,
+) => {
+  return (
+    !hasCircleOutlineArrowhead(element) &&
+    !appState?.shouldCacheIgnoreZoom &&
+    (!element.angle || isRightAngleRads(element.angle))
+  );
+};
+
 export const elementWithCanvasCache = new WeakMap<
   ExcalidrawElement,
   ExcalidrawElementWithCanvas
@@ -718,12 +734,17 @@ const drawElementFromCanvas = (
     // revert afterwards we don't have account for it during drawing
     context.translate(-cx, -cy);
 
+    const canvasDrawX =
+      (x1 + appState.scrollX) * window.devicePixelRatio -
+      (padding * elementWithCanvas.scale) / elementWithCanvas.scale;
+    const canvasDrawY =
+      (y1 + appState.scrollY) * window.devicePixelRatio -
+      (padding * elementWithCanvas.scale) / elementWithCanvas.scale;
+
     context.drawImage(
       elementWithCanvas.canvas!,
-      (x1 + appState.scrollX) * window.devicePixelRatio -
-        (padding * elementWithCanvas.scale) / elementWithCanvas.scale,
-      (y1 + appState.scrollY) * window.devicePixelRatio -
-        (padding * elementWithCanvas.scale) / elementWithCanvas.scale,
+      canvasDrawX,
+      canvasDrawY,
       elementWithCanvas.canvas!.width / elementWithCanvas.scale,
       elementWithCanvas.canvas!.height / elementWithCanvas.scale,
     );
@@ -998,17 +1019,13 @@ export const renderElement = (
         }
 
         const currentImageSmoothingStatus = context.imageSmoothingEnabled;
+        const shouldDisableImageSmoothing =
+          shouldDisableImageSmoothingForElement(element, appState);
 
         if (
           // do not disable smoothing during zoom as blurry shapes look better
           // on low resolution (while still zooming in) than sharp ones
-          !appState?.shouldCacheIgnoreZoom &&
-          // angle is 0 -> always disable smoothing
-          (!element.angle ||
-            // or check if angle is a right angle in which case we can still
-            // disable smoothing without adversely affecting the result
-            // We need less-than comparison because of FP artihmetic
-            isRightAngleRads(element.angle))
+          shouldDisableImageSmoothing
         ) {
           // Disabling smoothing makes output much sharper, especially for
           // text. Unless for non-right angles, where the aliasing is really

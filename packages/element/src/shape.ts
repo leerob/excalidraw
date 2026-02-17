@@ -343,19 +343,16 @@ const getArrowheadShapes = (
       // always use solid stroke for arrowhead
       delete options.strokeLineDash;
 
-      return [
-        generator.circle(x, y, diameter, {
-          ...options,
-          fill:
-            arrowhead === "circle_outline"
-              ? canvasBackgroundColor
-              : strokeColor,
+      const circleOptions = {
+        ...options,
+        fill:
+          arrowhead === "circle_outline" ? canvasBackgroundColor : strokeColor,
+        fillStyle: "solid" as const,
+        stroke: strokeColor,
+        roughness: Math.min(0.5, options.roughness || 0),
+      };
 
-          fillStyle: "solid",
-          stroke: strokeColor,
-          roughness: Math.min(0.5, options.roughness || 0),
-        }),
-      ];
+      return [generator.circle(x, y, diameter, circleOptions)];
     }
     case "triangle":
     case "triangle_outline": {
