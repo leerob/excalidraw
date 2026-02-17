@@ -752,19 +752,21 @@ const drawElementFromCanvas = (
     const canvasDrawY =
       (y1 + appState.scrollY) * window.devicePixelRatio -
       (padding * elementWithCanvas.scale) / elementWithCanvas.scale;
+    const isArrow = isArrowElement(element);
     const hasCircleOutlineArrowhead =
-      isArrowElement(element) &&
+      isArrow &&
       (element.startArrowhead === "circle_outline" ||
         element.endArrowhead === "circle_outline");
 
     // #region agent log
-    if (hasCircleOutlineArrowhead) {
+    if (isArrow) {
       appendAgentDebugLog(
         "B",
         "packages/element/src/renderElement.ts:drawElementFromCanvas",
         "Arrow drawImage destination metrics",
         {
           elementId: element.id,
+          hasCircleOutlineArrowhead,
           drawX: canvasDrawX,
           drawY: canvasDrawY,
           drawXFractional: canvasDrawX % 1,
@@ -1056,19 +1058,21 @@ export const renderElement = (
         const shouldDisableImageSmoothing =
           !appState?.shouldCacheIgnoreZoom &&
           (!element.angle || isRightAngleRads(element.angle));
+        const isArrow = isArrowElement(element);
         const hasCircleOutlineArrowhead =
-          isArrowElement(element) &&
+          isArrow &&
           (element.startArrowhead === "circle_outline" ||
             element.endArrowhead === "circle_outline");
 
         // #region agent log
-        if (hasCircleOutlineArrowhead) {
+        if (isArrow) {
           appendAgentDebugLog(
             "A",
             "packages/element/src/renderElement.ts:renderElement",
             "Image smoothing precheck for circle outline arrow",
             {
               elementId: element.id,
+              hasCircleOutlineArrowhead,
               angle: element.angle,
               shouldCacheIgnoreZoom: !!appState?.shouldCacheIgnoreZoom,
               isRightAngle: isRightAngleRads(element.angle),
@@ -1095,13 +1099,14 @@ export const renderElement = (
         }
 
         // #region agent log
-        if (hasCircleOutlineArrowhead) {
+        if (isArrow) {
           appendAgentDebugLog(
             "A",
             "packages/element/src/renderElement.ts:renderElement",
             "Image smoothing post-branch for circle outline arrow",
             {
               elementId: element.id,
+              hasCircleOutlineArrowhead,
               currentImageSmoothingStatus: context.imageSmoothingEnabled,
             },
           );
