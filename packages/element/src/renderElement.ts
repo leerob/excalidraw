@@ -82,34 +82,6 @@ import type {
 
 import type { RoughCanvas } from "roughjs/bin/canvas";
 
-const appendAgentDebugLog = (
-  hypothesisId: string,
-  location: string,
-  message: string,
-  data: Record<string, unknown>,
-) => {
-  if (import.meta.env.MODE !== "test") {
-    return;
-  }
-  const fsModulePath = "node:fs";
-  void import(/* @vite-ignore */ fsModulePath)
-    .then((fs) => {
-      fs.appendFileSync(
-        "/opt/cursor/logs/debug.log",
-        `${JSON.stringify({
-          hypothesisId,
-          location,
-          message,
-          data,
-          timestamp: Date.now(),
-        })}\n`,
-      );
-    })
-    .catch(() => {
-      // no-op for browser runtime
-    });
-};
-
 const isPendingImageElement = (
   element: ExcalidrawElement,
   renderConfig: StaticCanvasRenderConfig,
@@ -768,27 +740,6 @@ const drawElementFromCanvas = (
     const canvasDrawY =
       (y1 + appState.scrollY) * window.devicePixelRatio -
       (padding * elementWithCanvas.scale) / elementWithCanvas.scale;
-    const isArrow = isArrowElement(element);
-    const hasCircleOutlineArrowheadOnArrow = hasCircleOutlineArrowhead(element);
-
-    // #region agent log
-    if (isArrow) {
-      appendAgentDebugLog(
-        "B",
-        "packages/element/src/renderElement.ts:drawElementFromCanvas",
-        "Arrow drawImage destination metrics",
-        {
-          elementId: element.id,
-          hasCircleOutlineArrowhead: hasCircleOutlineArrowheadOnArrow,
-          drawX: canvasDrawX,
-          drawY: canvasDrawY,
-          drawXFractional: canvasDrawX % 1,
-          drawYFractional: canvasDrawY % 1,
-          devicePixelRatio: window.devicePixelRatio,
-        },
-      );
-    }
-    // #endregion
 
     context.drawImage(
       elementWithCanvas.canvas!,
@@ -1070,28 +1021,6 @@ export const renderElement = (
         const currentImageSmoothingStatus = context.imageSmoothingEnabled;
         const shouldDisableImageSmoothing =
           shouldDisableImageSmoothingForElement(element, appState);
-        const isArrow = isArrowElement(element);
-        const hasCircleOutlineArrowheadOnArrow =
-          hasCircleOutlineArrowhead(element);
-
-        // #region agent log
-        if (isArrow) {
-          appendAgentDebugLog(
-            "A",
-            "packages/element/src/renderElement.ts:renderElement",
-            "Image smoothing precheck for circle outline arrow",
-            {
-              elementId: element.id,
-              hasCircleOutlineArrowhead: hasCircleOutlineArrowheadOnArrow,
-              angle: element.angle,
-              shouldCacheIgnoreZoom: !!appState?.shouldCacheIgnoreZoom,
-              isRightAngle: isRightAngleRads(element.angle),
-              shouldDisableImageSmoothing,
-              currentImageSmoothingStatus,
-            },
-          );
-        }
-        // #endregion
 
         if (
           // do not disable smoothing during zoom as blurry shapes look better
@@ -1107,21 +1036,6 @@ export const renderElement = (
           //
           context.imageSmoothingEnabled = false;
         }
-
-        // #region agent log
-        if (isArrow) {
-          appendAgentDebugLog(
-            "A",
-            "packages/element/src/renderElement.ts:renderElement",
-            "Image smoothing post-branch for circle outline arrow",
-            {
-              elementId: element.id,
-              hasCircleOutlineArrowhead: hasCircleOutlineArrowheadOnArrow,
-              currentImageSmoothingStatus: context.imageSmoothingEnabled,
-            },
-          );
-        }
-        // #endregion
 
         if (
           element.id === appState.croppingElementId &&

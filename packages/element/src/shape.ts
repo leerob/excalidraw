@@ -78,34 +78,6 @@ import type {
 import type { Drawable, Options } from "roughjs/bin/core";
 import type { Point as RoughPoint } from "roughjs/bin/geometry";
 
-const appendAgentDebugLog = (
-  hypothesisId: string,
-  location: string,
-  message: string,
-  data: Record<string, unknown>,
-) => {
-  if (import.meta.env.MODE !== "test") {
-    return;
-  }
-  const fsModulePath = "node:fs";
-  void import(/* @vite-ignore */ fsModulePath)
-    .then((fs) => {
-      fs.appendFileSync(
-        "/opt/cursor/logs/debug.log",
-        `${JSON.stringify({
-          hypothesisId,
-          location,
-          message,
-          data,
-          timestamp: Date.now(),
-        })}\n`,
-      );
-    })
-    .catch(() => {
-      // no-op for browser runtime
-    });
-};
-
 export class ShapeCache {
   private static rg = new RoughGenerator();
   private static cache = new WeakMap<
@@ -371,26 +343,6 @@ const getArrowheadShapes = (
       // always use solid stroke for arrowhead
       delete options.strokeLineDash;
 
-      // #region agent log
-      if (arrowhead === "circle_outline") {
-        appendAgentDebugLog(
-          "C",
-          "packages/element/src/shape.ts:getArrowheadShapes",
-          "circle_outline arrowhead geometry",
-          {
-            elementId: element.id,
-            position,
-            x,
-            y,
-            diameter,
-            strokeWidth: element.strokeWidth,
-            strokeColor,
-            canvasBackgroundColor,
-          },
-        );
-      }
-      // #endregion
-
       const circleOptions = {
         ...options,
         fill:
@@ -399,22 +351,6 @@ const getArrowheadShapes = (
         stroke: strokeColor,
         roughness: Math.min(0.5, options.roughness || 0),
       };
-
-      // #region agent log
-      if (arrowhead === "circle_outline") {
-        appendAgentDebugLog(
-          "C",
-          "packages/element/src/shape.ts:getArrowheadShapes",
-          "circle_outline rough options",
-          {
-            elementId: element.id,
-            roughness: circleOptions.roughness,
-            fill: circleOptions.fill,
-            stroke: circleOptions.stroke,
-          },
-        );
-      }
-      // #endregion
 
       return [
         generator.circle(x, y, diameter, circleOptions),
