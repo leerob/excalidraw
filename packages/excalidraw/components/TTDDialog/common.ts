@@ -11,6 +11,7 @@ import {
   exportToCanvas,
   THEME,
 } from "../../index";
+import { normalizeSequenceArrowheads } from "./utils/mermaidSequenceArrowheads";
 
 import type { MermaidToExcalidrawLibProps } from "./types";
 
@@ -83,7 +84,11 @@ export const convertMermaidToExcalidraw = async ({
       return { success: false, error: err as Error };
     }
 
-    const { elements, files } = ret;
+    const { files } = ret;
+    const elements = normalizeSequenceArrowheads({
+      mermaidDefinition,
+      elements: ret.elements,
+    });
     setError(null);
 
     data.current = {
