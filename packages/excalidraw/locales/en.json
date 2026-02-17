@@ -163,6 +163,7 @@
     "zoomToFitViewport": "Zoom to fit in viewport",
     "zoomToFitSelection": "Zoom to fit selection",
     "zoomToFit": "Zoom to fit all elements",
+    "insertTableTemplate": "Insert table template",
     "installPWA": "Install Excalidraw locally (PWA)",
     "autoResize": "Enable text auto-resizing",
     "imageCropping": "Image cropping",

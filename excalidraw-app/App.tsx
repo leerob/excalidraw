@@ -42,6 +42,7 @@ import {
   XBrandIcon,
   DiscordIcon,
   ExcalLogo,
+  gridIcon,
   usersIcon,
   exportToPlus,
   share,
@@ -127,6 +128,7 @@ import {
   localStorageQuotaExceededAtom,
 } from "./data/LocalData";
 import { isBrowserStorageStateNewer } from "./data/tabSync";
+import { createTableTemplateElements } from "./data/tableTemplate";
 import { ShareDialog, shareDialogStateAtom } from "./share/ShareDialog";
 import CollabError, { collabErrorIndicatorAtom } from "./collab/CollabError";
 import { useHandleAppTheme } from "./useHandleAppTheme";
@@ -773,6 +775,15 @@ const ExcalidrawWrapper = () => {
     [setShareDialogState],
   );
 
+  const onInsertTableTemplate = useCallback(() => {
+    if (!excalidrawAPI) {
+      return;
+    }
+
+    excalidrawAPI.onInsertElements(createTableTemplateElements());
+    trackEvent("template", "insert_table", "ui");
+  }, [excalidrawAPI]);
+
   // browsers generally prevent infinite self-embedding, there are
   // cases where it still happens, and while we disallow self-embedding
   // by not whitelisting our own origin, this serves as an additional guard
@@ -920,10 +931,12 @@ const ExcalidrawWrapper = () => {
           theme={appTheme}
           setTheme={(theme) => setAppTheme(theme)}
           refresh={() => forceRefresh((prev) => !prev)}
+          onInsertTableTemplate={onInsertTableTemplate}
         />
         <AppWelcomeScreen
           onCollabDialogOpen={onCollabDialogOpen}
           isCollabEnabled={!isCollabDisabled}
+          onInsertTableTemplate={onInsertTableTemplate}
         />
         <OverwriteConfirmDialog>
           <OverwriteConfirmDialog.Actions.ExportToImage />
@@ -1015,6 +1028,21 @@ const ExcalidrawWrapper = () => {
                   type: "collaborationOnly",
                 });
               },
+            },
+            {
+              label: t("labels.insertTableTemplate"),
+              category: DEFAULT_CATEGORIES.elements,
+              predicate: true,
+              icon: gridIcon,
+              keywords: [
+                "table",
+                "template",
+                "grid",
+                "rows",
+                "columns",
+                "spreadsheet",
+              ],
+              perform: onInsertTableTemplate,
             },
             {
               label: t("roomDialog.button_stopSession"),
