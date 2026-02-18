@@ -51,6 +51,8 @@ import { useTextEditorFocus } from "../hooks/useTextEditorFocus";
 
 import { actionToggleViewMode } from "../actions/actionToggleViewMode";
 
+import { generateTable } from "../templates/table";
+
 import { getToolbarTools } from "./shapes";
 
 import "./Actions.scss";
@@ -84,8 +86,6 @@ import {
   pencilIcon,
   tableIcon,
 } from "./icons";
-
-import { generateTable } from "../templates/table";
 
 import { Island } from "./Island";
 
