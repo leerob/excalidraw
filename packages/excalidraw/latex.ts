@@ -42,12 +42,14 @@ export const measureLatex = (
   }
 
   const container = document.createElement("div");
-  container.style.position = "absolute";
+  container.style.position = "fixed";
+  container.style.top = "0";
+  container.style.left = "0";
   container.style.visibility = "hidden";
-  container.style.top = "-9999px";
-  container.style.left = "-9999px";
+  container.style.pointerEvents = "none";
   container.style.fontSize = `${fontSize}px`;
-  container.style.lineHeight = "1.2";
+  container.style.zIndex = "-9999";
+  container.style.padding = "2px";
   document.body.appendChild(container);
 
   try {
@@ -113,6 +115,12 @@ export const getLatexImage = (
   }
 
   renderLatexToCanvas(latex, fontSize, color);
+
+  const result = latexCanvasCache.get(key);
+  if (result) {
+    return { image: result.canvas, width: result.width, height: result.height };
+  }
+
   return null;
 };
 
@@ -127,13 +135,16 @@ const renderLatexToCanvas = (
   }
 
   const container = document.createElement("div");
-  container.style.position = "absolute";
-  container.style.top = "-9999px";
-  container.style.left = "-9999px";
+  container.style.position = "fixed";
+  container.style.top = "0";
+  container.style.left = "0";
+  container.style.visibility = "hidden";
+  container.style.pointerEvents = "none";
   container.style.fontSize = `${fontSize}px`;
   container.style.color = color;
-  container.style.lineHeight = "1.2";
   container.style.background = "transparent";
+  container.style.zIndex = "-9999";
+  container.style.padding = "2px";
   document.body.appendChild(container);
 
   try {
@@ -154,14 +165,10 @@ const renderLatexToCanvas = (
     const ctx = canvas.getContext("2d")!;
     ctx.scale(dpr, dpr);
 
-    drawDomToCanvas(targetEl, ctx, rect.left, rect.top);
+    drawDomToCanvas(targetEl, ctx, rect.left - 2, rect.top - 2);
 
     const entry: LatexCacheEntry = { canvas, width, height };
     latexCanvasCache.set(key, entry);
-
-    requestAnimationFrame(() => {
-      notifyLatexRendered();
-    });
   } catch {
     // Silent fail - fallback rendering will be used
   } finally {
@@ -198,9 +205,7 @@ const drawDomToCanvas = (
       continue;
     }
 
-    const ariaHidden = parentEl.closest("[aria-hidden='true']");
-    const mathml = parentEl.closest("math");
-    if (mathml && ariaHidden) {
+    if (parentEl.closest(".katex-mathml")) {
       continue;
     }
 
@@ -215,12 +220,14 @@ const drawDomToCanvas = (
     const font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
     ctx.font = font;
     ctx.fillStyle = style.color;
-    ctx.textBaseline = "top";
+    ctx.textBaseline = "alphabetic";
 
-    for (const r of rects) {
+    for (let i = 0; i < rects.length; i++) {
+      const r = rects[i];
       const x = r.left - offsetX;
-      const y = r.top - offsetY;
+      const y = r.bottom - offsetY - parseFloat(style.fontSize) * 0.15;
       ctx.fillText(text, x, y);
+      break;
     }
   }
 
