@@ -43,13 +43,11 @@ export const measureLatex = (
 
   const container = document.createElement("div");
   container.style.position = "fixed";
-  container.style.top = "0";
+  container.style.top = "-5000px";
   container.style.left = "0";
-  container.style.visibility = "hidden";
   container.style.pointerEvents = "none";
   container.style.fontSize = `${fontSize}px`;
   container.style.zIndex = "-9999";
-  container.style.padding = "2px";
   document.body.appendChild(container);
 
   try {
@@ -136,15 +134,13 @@ const renderLatexToCanvas = (
 
   const container = document.createElement("div");
   container.style.position = "fixed";
-  container.style.top = "0";
+  container.style.top = "-5000px";
   container.style.left = "0";
-  container.style.visibility = "hidden";
   container.style.pointerEvents = "none";
   container.style.fontSize = `${fontSize}px`;
   container.style.color = color;
   container.style.background = "transparent";
   container.style.zIndex = "-9999";
-  container.style.padding = "2px";
   document.body.appendChild(container);
 
   try {
@@ -155,8 +151,8 @@ const renderLatexToCanvas = (
     const targetEl = katexEl || container;
     const rect = targetEl.getBoundingClientRect();
 
-    const width = Math.max(10, Math.ceil(rect.width) + 4);
-    const height = Math.max(fontSize, Math.ceil(rect.height) + 4);
+    const width = Math.max(10, Math.ceil(rect.width) + 8);
+    const height = Math.max(fontSize, Math.ceil(rect.height) + 8);
 
     const dpr = window.devicePixelRatio || 1;
     const canvas = document.createElement("canvas");
@@ -165,12 +161,12 @@ const renderLatexToCanvas = (
     const ctx = canvas.getContext("2d")!;
     ctx.scale(dpr, dpr);
 
-    drawDomToCanvas(targetEl, ctx, rect.left - 2, rect.top - 2);
+    drawDomToCanvas(targetEl, ctx, rect.left, rect.top);
 
     const entry: LatexCacheEntry = { canvas, width, height };
     latexCanvasCache.set(key, entry);
   } catch {
-    // Silent fail - fallback rendering will be used
+    // Fallback rendering will be used
   } finally {
     document.body.removeChild(container);
   }
