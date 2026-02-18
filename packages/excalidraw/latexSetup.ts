@@ -3,12 +3,7 @@ import {
   setLatexMeasureProvider,
 } from "@excalidraw/element";
 
-import {
-  getLatexImage,
-  measureLatex,
-  ensureKatexCssLoaded,
-  onLatexRendered,
-} from "./latex";
+import { getLatexImage, measureLatex, onLatexRendered } from "./latex";
 
 let initialized = false;
 let refreshCallback: (() => void) | null = null;
@@ -23,11 +18,16 @@ export const initLatexProvider = (onRefresh?: () => void): void => {
   }
   initialized = true;
 
-  ensureKatexCssLoaded();
-
   setLatexImageProvider((latex, fontSize, color) => {
     const result = getLatexImage(latex, fontSize, color);
-    return result;
+    if (!result) {
+      return null;
+    }
+    return {
+      image: result.image,
+      width: result.width,
+      height: result.height,
+    };
   });
 
   setLatexMeasureProvider((latex, fontSize) => {

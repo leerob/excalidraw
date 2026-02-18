@@ -551,19 +551,19 @@ const drawElementOnCanvas = (
             renderConfig.theme === THEME.DARK
               ? applyDarkModeFilter(element.strokeColor)
               : element.strokeColor;
-          const latexImg = getLatexImageFromProvider(
+          const latexResult = getLatexImageFromProvider(
             element.originalText || element.text,
             element.fontSize,
             color,
           );
           context.save();
-          if (latexImg) {
+          if (latexResult) {
             context.drawImage(
-              latexImg.image,
+              latexResult.image,
               0,
               0,
-              element.width,
-              element.height,
+              latexResult.width,
+              latexResult.height,
             );
           } else {
             context.font = `italic ${element.fontSize}px serif`;

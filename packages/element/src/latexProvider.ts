@@ -1,5 +1,5 @@
 type LatexImageResult = {
-  image: HTMLImageElement;
+  image: CanvasImageSource;
   width: number;
   height: number;
 } | null;
