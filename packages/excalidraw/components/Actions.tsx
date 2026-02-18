@@ -865,6 +865,9 @@ export const CompactShapeActions = ({
             container={container}
             elementsMap={elementsMap}
           />
+          <div className="compact-action-item">
+            {renderAction("toggleLatex")}
+          </div>
         </>
       )}
 
@@ -1000,6 +1003,9 @@ export const MobileShapeActions = ({
               container={container}
               elementsMap={elementsMap}
             />
+            <div className="compact-action-item">
+              {renderAction("toggleLatex")}
+            </div>
           </>
         )}
 
