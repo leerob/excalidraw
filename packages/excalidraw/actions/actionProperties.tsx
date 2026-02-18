@@ -127,6 +127,7 @@ import {
   ArrowheadCrowfootIcon,
   ArrowheadCrowfootOneIcon,
   ArrowheadCrowfootOneOrManyIcon,
+  LatexIcon,
 } from "../components/icons";
 
 import { Fonts } from "../fonts";
@@ -866,6 +867,82 @@ export const actionIncreaseFontSize = register({
       event.shiftKey &&
       // KEYS.PERIOD needed for MacOS
       (event.key === KEYS.CHEVRON_RIGHT || event.key === KEYS.PERIOD)
+    );
+  },
+});
+
+export const actionToggleLatex = register({
+  name: "toggleLatex",
+  label: "labels.latex",
+  icon: LatexIcon,
+  trackEvent: false,
+  perform: (elements, appState, _, app) => {
+    const newIsLatex = !appState.currentItemIsLatex;
+
+    return {
+      elements: changeProperty(
+        elements,
+        appState,
+        (el) => {
+          if (isTextElement(el)) {
+            return newElementWith(el, { isLatex: newIsLatex });
+          }
+          return el;
+        },
+        true,
+      ),
+      appState: {
+        ...appState,
+        currentItemIsLatex: newIsLatex,
+      },
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
+    };
+  },
+  PanelComponent: ({ elements, appState, updateData, app }) => {
+    const isLatex = getFormValue(
+      elements,
+      app,
+      (element) => {
+        if (isTextElement(element)) {
+          return element.isLatex || false;
+        }
+        return null;
+      },
+      (element) =>
+        isTextElement(element) ||
+        getBoundTextElement(
+          element,
+          app.scene.getNonDeletedElementsMap(),
+        ) !== null,
+      (hasSelection) =>
+        hasSelection ? null : appState.currentItemIsLatex,
+    );
+
+    return (
+      <fieldset>
+        <legend>{t("labels.latex")}</legend>
+        <button
+          className={`excalidraw-button ${isLatex ? "active" : ""}`}
+          onClick={() => updateData(null)}
+          title={t("labels.latex")}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            padding: "0.375rem 0.75rem",
+            background: isLatex ? "var(--color-primary)" : undefined,
+            color: isLatex ? "var(--color-primary-contrastText)" : undefined,
+            borderRadius: "var(--border-radius-md)",
+            border: "1px solid var(--default-border-color)",
+            cursor: "pointer",
+            fontSize: "0.875rem",
+            fontFamily: "serif",
+            fontStyle: "italic",
+          }}
+        >
+          ∑ LaTeX
+        </button>
+      </fieldset>
     );
   },
 });

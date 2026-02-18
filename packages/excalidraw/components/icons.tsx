@@ -419,6 +419,23 @@ export const TextSizeIcon = createIcon(
   tablerIconProps,
 );
 
+// LaTeX/math formula icon
+export const LatexIcon = createIcon(
+  <g strokeWidth="0" fill="currentColor">
+    <text
+      x="12"
+      y="17"
+      textAnchor="middle"
+      fontSize="16"
+      fontFamily="serif"
+      fontStyle="italic"
+    >
+      {"∑"}
+    </text>
+  </g>,
+  tablerIconProps,
+);
+
 // modified tabler-icons: photo
 export const ImageIcon = createIcon(
   <g strokeWidth="1.25">

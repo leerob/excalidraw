@@ -331,6 +331,13 @@ export const textWysiwyg = ({
     boxSizing: "content-box",
   });
   editable.value = element.originalText;
+
+  if (element.isLatex) {
+    editable.placeholder = "Enter LaTeX (e.g. E = mc^2)";
+    editable.style.fontFamily = '"Courier New", monospace';
+    editable.style.fontStyle = "normal";
+  }
+
   updateWysiwygStyle();
 
   if (onChange) {

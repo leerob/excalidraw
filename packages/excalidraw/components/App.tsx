@@ -337,6 +337,7 @@ import { ActionManager } from "../actions/manager";
 import { actions } from "../actions/register";
 import { getShortcutFromShortcutName } from "../actions/shortcuts";
 import { trackEvent } from "../analytics";
+import { initLatexProvider } from "../latexSetup";
 import { AnimationFrameHandler } from "../animation-frame-handler";
 import {
   getDefaultAppState,
@@ -2866,6 +2867,10 @@ class App extends React.Component<AppProps, AppState> {
     this.unmounted = false;
     this.excalidrawContainerValue.container =
       this.excalidrawContainerRef.current;
+
+    initLatexProvider(() => {
+      this.scene.triggerUpdate();
+    });
 
     if (isTestEnv() || isDevEnv()) {
       const setState = this.setState.bind(this);
@@ -5864,6 +5869,7 @@ class App extends React.Component<AppProps, AppState> {
             : container.angle
           : (0 as Radians),
         frameId: topLayerFrame ? topLayerFrame.id : null,
+        isLatex: this.state.currentItemIsLatex,
       });
 
     if (!existingTextElement && shouldBindToContainer && container) {

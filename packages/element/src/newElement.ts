@@ -23,6 +23,7 @@ import {
 import { newElementWith } from "./mutateElement";
 import { getBoundTextMaxWidth } from "./textElement";
 import { normalizeText, measureText } from "./textMeasurements";
+import { measureLatexFromProvider } from "./latexProvider";
 import { wrapText } from "./textWrapping";
 
 import { isLineElement } from "./typeChecks";
@@ -247,17 +248,16 @@ export const newTextElement = (
     containerId?: ExcalidrawTextContainer["id"] | null;
     lineHeight?: ExcalidrawTextElement["lineHeight"];
     autoResize?: ExcalidrawTextElement["autoResize"];
+    isLatex?: boolean;
   } & ElementConstructorOpts,
 ): NonDeleted<ExcalidrawTextElement> => {
   const fontFamily = opts.fontFamily || DEFAULT_FONT_FAMILY;
   const fontSize = opts.fontSize || DEFAULT_FONT_SIZE;
   const lineHeight = opts.lineHeight || getLineHeight(fontFamily);
   const text = normalizeText(opts.text);
-  const metrics = measureText(
-    text,
-    getFontString({ fontFamily, fontSize }),
-    lineHeight,
-  );
+  const metrics = opts.isLatex && text.trim()
+    ? measureLatexFromProvider(text, fontSize)
+    : measureText(text, getFontString({ fontFamily, fontSize }), lineHeight);
   const textAlign = opts.textAlign || DEFAULT_TEXT_ALIGN;
   const verticalAlign = opts.verticalAlign || DEFAULT_VERTICAL_ALIGN;
   const offsets = getTextElementPositionOffsets(
@@ -280,6 +280,7 @@ export const newTextElement = (
     originalText: opts.originalText ?? text,
     autoResize: opts.autoResize ?? true,
     lineHeight,
+    isLatex: opts.isLatex || false,
   };
 
   const textElement: ExcalidrawTextElement = newElementWith(
@@ -300,11 +301,9 @@ const getAdjustedDimensions = (
   width: number;
   height: number;
 } => {
-  let { width: nextWidth, height: nextHeight } = measureText(
-    nextText,
-    getFontString(element),
-    element.lineHeight,
-  );
+  let { width: nextWidth, height: nextHeight } = element.isLatex
+    ? measureLatexFromProvider(nextText, element.fontSize)
+    : measureText(nextText, getFontString(element), element.lineHeight);
 
   // wrapped text
   if (!element.autoResize) {
@@ -426,7 +425,7 @@ export const refreshTextDimensions = (
   if (textElement.isDeleted) {
     return;
   }
-  if (container || !textElement.autoResize) {
+  if (!textElement.isLatex && (container || !textElement.autoResize)) {
     text = wrapText(
       text,
       getFontString(textElement),
