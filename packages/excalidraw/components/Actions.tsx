@@ -82,7 +82,10 @@ import {
   DotsHorizontalIcon,
   SelectionIcon,
   pencilIcon,
+  tableIcon,
 } from "./icons";
+
+import { generateTable } from "../templates/table";
 
 import { Island } from "./Island";
 
@@ -1247,6 +1250,17 @@ export const ShapesSwitcher = ({
               {t("toolBar.lasso")}
             </DropdownMenu.Item>
           )}
+          <DropdownMenu.Item
+            onSelect={() => {
+              const elements = generateTable();
+              app.onInsertElements(elements);
+              trackEvent("toolbar", "table", "ui");
+            }}
+            icon={tableIcon}
+            data-testid="toolbar-table"
+          >
+            {t("toolBar.table")}
+          </DropdownMenu.Item>
           <div style={{ margin: "6px 0", fontSize: 14, fontWeight: 600 }}>
             Generate
           </div>
