@@ -33,6 +33,7 @@ import type {
   OrderedExcalidrawElement,
   ExcalidrawNonSelectionElement,
   BindMode,
+  ExcalidrawFreeDrawElement,
 } from "@excalidraw/element/types";
 
 import type {
@@ -344,6 +345,7 @@ export interface AppState {
   currentItemFillStyle: ExcalidrawElement["fillStyle"];
   currentItemStrokeWidth: number;
   currentItemStrokeStyle: ExcalidrawElement["strokeStyle"];
+  currentItemStrokeShape: ExcalidrawFreeDrawElement["strokeShape"];
   currentItemRoughness: number;
   currentItemOpacity: number;
   currentItemFontFamily: FontFamilyValues;

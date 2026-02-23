@@ -371,12 +371,15 @@ export type ExcalidrawElbowArrowElement = Merge<
   }
 >;
 
+export type FreeDrawStrokeShape = "round" | "sharp" | "marker";
+
 export type ExcalidrawFreeDrawElement = _ExcalidrawElementBase &
   Readonly<{
     type: "freedraw";
     points: readonly LocalPoint[];
     pressures: readonly number[];
     simulatePressure: boolean;
+    strokeShape: FreeDrawStrokeShape;
   }>;
 
 export type FileId = string & { _brand: "FileId" };

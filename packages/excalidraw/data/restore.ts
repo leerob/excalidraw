@@ -393,10 +393,15 @@ export const restoreElement = (
 
       return element;
     case "freedraw": {
+      const strokeShape =
+        element.strokeShape === "marker" || element.strokeShape === "sharp"
+          ? element.strokeShape
+          : "round";
       return restoreElementWithProperties(element, {
         points: element.points,
         simulatePressure: element.simulatePressure,
         pressures: element.pressures,
+        strokeShape,
       });
     }
     case "image":

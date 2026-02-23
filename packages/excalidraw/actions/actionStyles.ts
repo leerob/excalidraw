@@ -16,6 +16,7 @@ import {
   isFrameLikeElement,
   isArrowElement,
   isExcalidrawElement,
+  isFreeDrawElement,
   isTextElement,
 } from "@excalidraw/element";
 
@@ -101,6 +102,11 @@ export const actionPasteStyles = register({
             strokeWidth: elementStylesToCopyFrom?.strokeWidth,
             strokeColor: elementStylesToCopyFrom?.strokeColor,
             strokeStyle: elementStylesToCopyFrom?.strokeStyle,
+            strokeShape:
+              isFreeDrawElement(element) &&
+              isFreeDrawElement(elementStylesToCopyFrom)
+                ? elementStylesToCopyFrom.strokeShape
+                : undefined,
             fillStyle: elementStylesToCopyFrom?.fillStyle,
             opacity: elementStylesToCopyFrom?.opacity,
             roughness: elementStylesToCopyFrom?.roughness,

@@ -160,6 +160,23 @@ describe("restoreElements", () => {
     });
   });
 
+  it("should default stroke shape for legacy freedraw elements", () => {
+    const freedrawElement = API.createElement({
+      type: "freedraw",
+      id: "id-freedraw02",
+      points: [pointFrom(0, 0), pointFrom(10, 10)],
+    }) as any;
+
+    delete freedrawElement.strokeShape;
+
+    const restoredFreedraw = restore.restoreElements(
+      [freedrawElement],
+      null,
+    )[0] as ExcalidrawFreeDrawElement;
+
+    expect(restoredFreedraw.strokeShape).toBe("round");
+  });
+
   it("should restore line and draw elements correctly", () => {
     const lineElement = API.createElement({ type: "line", id: "id-line01" });
 
