@@ -30,6 +30,7 @@ import type {
   ExcalidrawLinearElement,
   ExcalidrawTextElement,
   ExcalidrawArrowElement,
+  ExcalidrawFreeDrawElement,
   ExcalidrawRectangleElement,
   ExcalidrawEllipseElement,
   ExcalidrawDiamondElement,
@@ -431,8 +432,10 @@ type DrawingToolName = Exclude<
   "lock" | "selection" | "eraser" | "lasso"
 >;
 
-type Element<T extends DrawingToolName> = T extends "line" | "freedraw"
+type Element<T extends DrawingToolName> = T extends "line"
   ? ExcalidrawLinearElement
+  : T extends "freedraw"
+  ? ExcalidrawFreeDrawElement
   : T extends "arrow"
   ? ExcalidrawArrowElement
   : T extends "text"
