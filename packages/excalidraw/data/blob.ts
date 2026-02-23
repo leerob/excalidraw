@@ -98,6 +98,10 @@ export const getMimeType = (blob: Blob | string): string => {
     return MIME_TYPES.jpg;
   } else if (/\.svg$/.test(name)) {
     return MIME_TYPES.svg;
+  } else if (/\.gif$/.test(name)) {
+    return MIME_TYPES.gif;
+  } else if (/\.webp$/.test(name)) {
+    return MIME_TYPES.webp;
   } else if (/\.excalidrawlib$/.test(name)) {
     return MIME_TYPES.excalidrawlib;
   }
@@ -318,8 +322,9 @@ export const resizeImageFile = async (
     maxWidthOrHeight: number;
   },
 ): Promise<File> => {
-  // SVG files shouldn't a can't be resized
-  if (file.type === MIME_TYPES.svg) {
+  // SVG files shouldn't and can't be resized
+  // GIF files are skipped to preserve animation frames
+  if (file.type === MIME_TYPES.svg || file.type === MIME_TYPES.gif) {
     return file;
   }
 
@@ -433,7 +438,8 @@ const getActualMimeTypeFromImage = async (file: Blob | File) => {
     // but may yield false positives. (https://stackoverflow.com/a/23360709/927631)
     jpg: /^255 216 255\b/,
     // https://en.wikipedia.org/wiki/GIF#Example_GIF_file
-    gif: /^71 73 70 56 57 97\b/,
+    // matches both GIF87a and GIF89a
+    gif: /^71 73 70 56 (55|57) 97\b/,
     // 4 bytes for RIFF + 4 bytes for chunk size + WEBP identifier
     webp: /^82 73 70 70 \d+ \d+ \d+ \d+ 87 69 66 80 86 80 56\b/,
   };
