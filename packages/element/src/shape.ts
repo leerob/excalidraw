@@ -1050,6 +1050,39 @@ const getFreeDrawSvgPath = (element: ExcalidrawFreeDrawElement) => {
   ) as SVGPathString;
 };
 
+const FREEDRAW_STROKE_SHAPE_CONFIG: Record<
+  ExcalidrawFreeDrawElement["strokeShape"],
+  {
+    sizeMultiplier: number;
+    thinning: number;
+    smoothing: number;
+    streamline: number;
+    easing: (t: number) => number;
+  }
+> = {
+  round: {
+    sizeMultiplier: 4.25,
+    thinning: 0.6,
+    smoothing: 0.5,
+    streamline: 0.5,
+    easing: (t) => Math.sin((t * Math.PI) / 2),
+  },
+  sharp: {
+    sizeMultiplier: 3.8,
+    thinning: 0.8,
+    smoothing: 0.3,
+    streamline: 0.7,
+    easing: (t) => t * t,
+  },
+  marker: {
+    sizeMultiplier: 5.5,
+    thinning: 0.15,
+    smoothing: 0.8,
+    streamline: 0.35,
+    easing: (t) => t,
+  },
+};
+
 export const getFreedrawOutlinePoints = (
   element: ExcalidrawFreeDrawElement,
 ) => {
@@ -1060,13 +1093,16 @@ export const getFreedrawOutlinePoints = (
     ? element.points.map(([x, y], i) => [x, y, element.pressures[i]])
     : [[0, 0, 0.5]];
 
+  const strokeShape = element.strokeShape || "round";
+  const shapeConfig = FREEDRAW_STROKE_SHAPE_CONFIG[strokeShape];
+
   return getStroke(inputPoints as number[][], {
     simulatePressure: element.simulatePressure,
-    size: element.strokeWidth * 4.25,
-    thinning: 0.6,
-    smoothing: 0.5,
-    streamline: 0.5,
-    easing: (t) => Math.sin((t * Math.PI) / 2), // https://easings.net/#easeOutSine
+    size: element.strokeWidth * shapeConfig.sizeMultiplier,
+    thinning: shapeConfig.thinning,
+    smoothing: shapeConfig.smoothing,
+    streamline: shapeConfig.streamline,
+    easing: shapeConfig.easing,
     last: true,
   }) as [number, number][];
 };

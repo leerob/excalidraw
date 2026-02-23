@@ -69,6 +69,7 @@ import type {
   ElementsMap,
   ExcalidrawBindableElement,
   ExcalidrawElement,
+  ExcalidrawFreeDrawElement,
   ExcalidrawLinearElement,
   ExcalidrawTextElement,
   FontFamilyValues,
@@ -557,39 +558,125 @@ export const actionChangeStrokeWidth = register<
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
-  PanelComponent: ({ elements, appState, updateData, app, data }) => (
+  PanelComponent: ({ elements, appState, updateData, app, data }) => {
+    const selectedElements = getSelectedElements(elements, appState);
+    const shouldShowVeryLargeOption =
+      appState.activeTool.type === "freedraw" ||
+      selectedElements.some((element) => element.type === "freedraw");
+
+    return (
+      <fieldset>
+        <legend>{t("labels.strokeWidth")}</legend>
+        <div className="buttonList">
+          <RadioSelection
+            group="stroke-width"
+            options={[
+              {
+                value: STROKE_WIDTH.thin,
+                text: t("labels.thin"),
+                icon: StrokeWidthBaseIcon,
+                testId: "strokeWidth-thin",
+              },
+              {
+                value: STROKE_WIDTH.bold,
+                text: t("labels.bold"),
+                icon: StrokeWidthBoldIcon,
+                testId: "strokeWidth-bold",
+              },
+              {
+                value: STROKE_WIDTH.extraBold,
+                text: t("labels.extraBold"),
+                icon: StrokeWidthExtraBoldIcon,
+                testId: "strokeWidth-extraBold",
+              },
+              ...(shouldShowVeryLargeOption
+                ? [
+                    {
+                      value: STROKE_WIDTH.extraBold * 2,
+                      text: t("labels.veryLarge"),
+                      icon: StrokeWidthExtraBoldIcon,
+                      testId: "strokeWidth-veryLarge",
+                    },
+                  ]
+                : []),
+            ]}
+            value={getFormValue(
+              elements,
+              app,
+              (element) => element.strokeWidth,
+              (element) => element.hasOwnProperty("strokeWidth"),
+              (hasSelection) =>
+                hasSelection ? null : appState.currentItemStrokeWidth,
+            )}
+            onChange={(value) => updateData(value)}
+          />
+        </div>
+      </fieldset>
+    );
+  },
+});
+
+const isFreeDrawElement = (
+  element: ExcalidrawElement,
+): element is ExcalidrawFreeDrawElement => {
+  return element.type === "freedraw";
+};
+
+export const actionChangeStrokeShape = register<
+  ExcalidrawFreeDrawElement["strokeShape"]
+>({
+  name: "changeStrokeShape",
+  label: "labels.brushType",
+  trackEvent: false,
+  perform: (elements, appState, value) => {
+    return {
+      elements: changeProperty(elements, appState, (el) =>
+        isFreeDrawElement(el)
+          ? newElementWith(el, {
+              strokeShape: value,
+            })
+          : el,
+      ),
+      appState: { ...appState, currentItemStrokeShape: value },
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
+    };
+  },
+  PanelComponent: ({ elements, appState, updateData, app }) => (
     <fieldset>
-      <legend>{t("labels.strokeWidth")}</legend>
+      <legend>{t("labels.brushType")}</legend>
       <div className="buttonList">
         <RadioSelection
-          group="stroke-width"
+          group="stroke-shape"
           options={[
             {
-              value: STROKE_WIDTH.thin,
-              text: t("labels.thin"),
-              icon: StrokeWidthBaseIcon,
-              testId: "strokeWidth-thin",
+              value: "round",
+              text: t("labels.brushRound"),
+              icon: EdgeRoundIcon,
+              testId: "strokeShape-round",
             },
             {
-              value: STROKE_WIDTH.bold,
-              text: t("labels.bold"),
-              icon: StrokeWidthBoldIcon,
-              testId: "strokeWidth-bold",
-            },
-            {
-              value: STROKE_WIDTH.extraBold,
-              text: t("labels.extraBold"),
+              value: "marker",
+              text: t("labels.brushMarker"),
               icon: StrokeWidthExtraBoldIcon,
-              testId: "strokeWidth-extraBold",
+              testId: "strokeShape-marker",
+            },
+            {
+              value: "sharp",
+              text: t("labels.brushSharp"),
+              icon: EdgeSharpIcon,
+              testId: "strokeShape-sharp",
             },
           ]}
           value={getFormValue(
             elements,
             app,
-            (element) => element.strokeWidth,
-            (element) => element.hasOwnProperty("strokeWidth"),
+            (element) =>
+              isFreeDrawElement(element)
+                ? element.strokeShape
+                : appState.currentItemStrokeShape,
+            isFreeDrawElement,
             (hasSelection) =>
-              hasSelection ? null : appState.currentItemStrokeWidth,
+              hasSelection ? null : appState.currentItemStrokeShape,
           )}
           onChange={(value) => updateData(value)}
         />

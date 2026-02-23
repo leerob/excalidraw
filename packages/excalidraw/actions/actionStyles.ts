@@ -16,6 +16,7 @@ import {
   isFrameLikeElement,
   isArrowElement,
   isExcalidrawElement,
+  isFreeDrawElement,
   isTextElement,
 } from "@excalidraw/element";
 
@@ -151,6 +152,15 @@ export const actionPasteStyles = register({
             newElement = newElementWith(newElement, {
               startArrowhead: elementStylesToCopyFrom.startArrowhead,
               endArrowhead: elementStylesToCopyFrom.endArrowhead,
+            });
+          }
+
+          if (
+            isFreeDrawElement(newElement) &&
+            isFreeDrawElement(elementStylesToCopyFrom)
+          ) {
+            newElement = newElementWith(newElement, {
+              strokeShape: elementStylesToCopyFrom.strokeShape,
             });
           }
 
