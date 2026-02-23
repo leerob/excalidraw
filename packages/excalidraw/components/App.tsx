@@ -41,6 +41,7 @@ import {
   MIME_TYPES,
   MQ_RIGHT_SIDEBAR_MIN_WIDTH,
   POINTER_BUTTON,
+  POINTER_BUTTONS,
   ROUNDNESS,
   SCROLL_TIMEOUT,
   TAP_TWICE_TIMEOUT,
@@ -7197,11 +7198,66 @@ class App extends React.Component<AppProps, AppState> {
       return;
     }
 
+    // Pen barrel button held → temporarily switch to eraser.
+    // Covers both "hold barrel then touch surface" (button=0, buttons&2)
+    // and "press barrel while pen on surface" (button=2).
+    if (
+      event.pointerType === "pen" &&
+      (event.buttons & POINTER_BUTTONS.SECONDARY) !== 0 &&
+      this.state.activeTool.type !== TOOL_TYPE.eraser
+    ) {
+      this.setState(
+        {
+          activeTool: updateActiveTool(this.state, {
+            type: TOOL_TYPE.eraser,
+            lastActiveToolBeforeEraser: this.state.activeTool,
+          }),
+        },
+        () => {
+          this.handleCanvasPointerDown(event);
+          const onPointerUp = () => {
+            unsubPointerUp();
+            unsubCleanup?.();
+            if (isEraserActive(this.state)) {
+              this.setState({
+                activeTool: updateActiveTool(this.state, {
+                  ...(this.state.activeTool.lastActiveTool || {
+                    type: TOOL_TYPE.selection,
+                  }),
+                  lastActiveToolBeforeEraser: null,
+                }),
+              });
+            }
+          };
+
+          const unsubPointerUp = addEventListener(
+            window,
+            EVENT.POINTER_UP,
+            onPointerUp,
+            {
+              once: true,
+            },
+          );
+          let unsubCleanup: UnsubscribeCallback | undefined;
+          requestAnimationFrame(() => {
+            unsubCleanup =
+              this.missingPointerEventCleanupEmitter.once(onPointerUp);
+          });
+        },
+      );
+      return;
+    }
+
     // only handle left mouse button or touch
     if (
       event.button !== POINTER_BUTTON.MAIN &&
       event.button !== POINTER_BUTTON.TOUCH &&
-      event.button !== POINTER_BUTTON.ERASER
+      event.button !== POINTER_BUTTON.ERASER &&
+      !(
+        event.button === POINTER_BUTTON.SECONDARY &&
+        event.pointerType === "pen" &&
+        isEraserActive(this.state)
+      )
     ) {
       return;
     }
@@ -11572,6 +11628,10 @@ class App extends React.Component<AppProps, AppState> {
     event: React.MouseEvent<HTMLElement | HTMLCanvasElement>,
   ) => {
     event.preventDefault();
+
+    if (isEraserActive(this.state)) {
+      return;
+    }
 
     if (
       (("pointerType" in event.nativeEvent &&

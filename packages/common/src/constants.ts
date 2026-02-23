@@ -41,6 +41,16 @@ export const POINTER_BUTTON = {
   ERASER: 5,
 } as const;
 
+/** Bitmask values for PointerEvent.buttons */
+export const POINTER_BUTTONS = {
+  /** Primary button (e.g. left mouse, pen tip contact) */
+  MAIN: 1,
+  /** Secondary button (e.g. right mouse, pen barrel button) */
+  SECONDARY: 2,
+  /** Eraser button (pen eraser tip) */
+  ERASER: 32,
+} as const;
+
 export const POINTER_EVENTS = {
   enabled: "all",
   disabled: "none",
