@@ -1,6 +1,10 @@
-import { isElementInViewport } from "@excalidraw/element";
+import { getElementBounds } from "@excalidraw/element";
 
-import { memoize, toBrandedType } from "@excalidraw/common";
+import {
+  memoize,
+  toBrandedType,
+  viewportCoordsToSceneCoords,
+} from "@excalidraw/common";
 
 import type {
   ExcalidrawElement,
@@ -43,22 +47,35 @@ export class Renderer {
       height: AppState["height"];
       width: AppState["width"];
     }): readonly NonDeletedExcalidrawElement[] => {
+      const viewTransformations = {
+        zoom,
+        offsetLeft,
+        offsetTop,
+        scrollX,
+        scrollY,
+      };
+      const topLeftSceneCoords = viewportCoordsToSceneCoords(
+        {
+          clientX: offsetLeft,
+          clientY: offsetTop,
+        },
+        viewTransformations,
+      );
+      const bottomRightSceneCoords = viewportCoordsToSceneCoords(
+        {
+          clientX: offsetLeft + width,
+          clientY: offsetTop + height,
+        },
+        viewTransformations,
+      );
       const visibleElements: NonDeletedExcalidrawElement[] = [];
       for (const element of elementsMap.values()) {
+        const [x1, y1, x2, y2] = getElementBounds(element, elementsMap);
         if (
-          isElementInViewport(
-            element,
-            width,
-            height,
-            {
-              zoom,
-              offsetLeft,
-              offsetTop,
-              scrollX,
-              scrollY,
-            },
-            elementsMap,
-          )
+          topLeftSceneCoords.x <= x2 &&
+          topLeftSceneCoords.y <= y2 &&
+          bottomRightSceneCoords.x >= x1 &&
+          bottomRightSceneCoords.y >= y1
         ) {
           visibleElements.push(element);
         }
@@ -66,31 +83,23 @@ export class Renderer {
       return visibleElements;
     };
 
-    const getRenderableElements = ({
+    const getFilteredRenderableElements = ({
       elements,
-      editingTextElement,
+      hiddenTextElementId,
       newElementId,
     }: {
       elements: readonly NonDeletedExcalidrawElement[];
-      editingTextElement: AppState["editingTextElement"];
+      hiddenTextElementId: ExcalidrawElement["id"] | null;
       newElementId: ExcalidrawElement["id"] | undefined;
     }) => {
       const elementsMap = toBrandedType<RenderableElementsMap>(new Map());
 
       for (const element of elements) {
-        if (newElementId === element.id) {
+        if (newElementId === element.id || hiddenTextElementId === element.id) {
           continue;
         }
 
-        // we don't want to render text element that's being currently edited
-        // (it's rendered on remote only)
-        if (
-          !editingTextElement ||
-          editingTextElement.type !== "text" ||
-          element.id !== editingTextElement.id
-        ) {
-          elementsMap.set(element.id, element);
-        }
+        elementsMap.set(element.id, element);
       }
       return elementsMap;
     };
@@ -123,12 +132,22 @@ export class Renderer {
         sceneNonce: ReturnType<InstanceType<typeof Scene>["getSceneNonce"]>;
       }) => {
         const elements = this.scene.getNonDeletedElements();
+        const sceneElementsMap = this.scene.getNonDeletedElementsMap();
+        const hiddenTextElementId =
+          editingTextElement?.type === "text" ? editingTextElement.id : null;
 
-        const elementsMap = getRenderableElements({
-          elements,
-          editingTextElement,
-          newElementId,
-        });
+        const shouldFilterRenderableElements =
+          (newElementId != null && sceneElementsMap.has(newElementId)) ||
+          (hiddenTextElementId != null &&
+            sceneElementsMap.has(hiddenTextElementId));
+
+        const elementsMap = shouldFilterRenderableElements
+          ? getFilteredRenderableElements({
+              elements,
+              hiddenTextElementId,
+              newElementId,
+            })
+          : toBrandedType<RenderableElementsMap>(sceneElementsMap);
 
         const visibleElements = getVisibleCanvasElements({
           elementsMap,
